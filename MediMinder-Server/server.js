@@ -8,10 +8,7 @@ connectDB();
 const app = express();
 app.use(express.json());
 
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/patients', require('./routes/patientRoutes'));
-app.use('/api/caregivers', require('./routes/caregiverRoutes'));
-app.use('/api/medications', require('./routes/medicationRoutes'));
+app.use('/api', require('./routes/api'));
 
 app.get('/', (req, res) => res.send('MediMinder Server Running...'));
 
