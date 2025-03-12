@@ -1,29 +1,15 @@
-const Medication = require('../models/medicationModel');
+const medicationService = require('../models/medicationModel');
 
-exports.addMedication = async (req, res) => {
+// יצירת תרופה
+async function createMedication(req, res) {
+    const { patientId, name, dose, times, slotNumber } = req.body;
     try {
-        const { patientId, name, dose, times } = req.body;
-
-        const medication = new Medication({
-            patientId,
-            name,
-            dose,
-            times
-        });
-
-        await medication.save();
-        res.status(201).json({ message: "Medication added", medication });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        const medication = await medicationService.addMedication(patientId, name, dose, times, slotNumber);
+        res.status(201).json(medication);  // מחזירים את התרופה שנוספה
+    } catch (error) {
+        res.status(500).json({ message: 'Error adding medication', error });
     }
-};
+}
 
-exports.getMedicationsForPatient = async (req, res) => {
-    try {
-        const { patientId } = req.params;
-        const medications = await Medication.find({ patientId });
-        res.status(200).json(medications);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
+module.exports = {
+    createMedication}
