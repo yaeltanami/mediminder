@@ -1,8 +1,12 @@
 const express = require('express');
-const { assignMedicationToSlot } = require('../controllers/pillBoxController');
+const { createPillBox } = require('../controllers/pillBoxController'); // וודאי שהייבוא תקין
 
 const router = express.Router();
 
-router.post('/assign', assignMedicationToSlot); // הקצאת תרופה לתא
+// יצירת קופסה חכמה למטופל
+router.post('/create', createPillBox);
+
+// הקצאת תרופה אוטומטית לתא פנוי בקופסה
+router.post('/assign-auto', assignMedicationToAvailableSlot);
 
 module.exports = router;
