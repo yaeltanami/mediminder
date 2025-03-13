@@ -1,8 +1,17 @@
 const userService = require('../services/userService');
 
+/**
+ * בקר לרישום משתמש חדש
+ */
 const registerUser = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
+
+        // בדיקת תקינות הנתונים
+        if (!name || !email || !password || !role) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
         const { user, token } = await userService.registerUser(name, email, password, role);
         res.status(201).json({ user, token });
     } catch (error) {
@@ -10,9 +19,18 @@ const registerUser = async (req, res) => {
     }
 };
 
+/**
+ * בקר להתחברות משתמש
+ */
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        // בדיקת תקינות הנתונים
+        if (!email || !password) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
         const { user, token } = await userService.loginUser(email, password);
         res.status(200).json({ user, token });
     } catch (error) {

@@ -1,28 +1,22 @@
-const Patient = require('../models/patientModel');
+const patientService = require('../services/patientService');
 
-exports.createPatient = async (req, res) => {
+/**
+ * בקר לרישום מטופל חדש
+ */
+const registerPatient = async (req, res) => {
     try {
-        const { userId, birthDate, caregivers } = req.body;
+        const { name, email, password, birthDate, caregivers } = req.body;
 
-        const patient = new Patient({
-            userId,
-            birthDate,
-            caregivers: caregivers || [],
-            medications: []
-        });
+        if (!name || !email || !password || !birthDate) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
 
-        await patient.save();
-        res.status(201).json({ message: "Patient profile created", patient });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        const { user, patient, token } = await patientService.registerPatient({ name, email, password, birthDate, caregivers });
+        res.status(201).json({ user, patient, token });
+
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
 };
 
-exports.getPatients = async (req, res) => {
-    try {
-        const patients = await Patient.find().populate('userId caregivers medications');
-        res.status(200).json(patients);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
+module.exports = { registerPatient };

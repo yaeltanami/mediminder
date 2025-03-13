@@ -1,28 +1,22 @@
-const Caregiver = require('../models/caregiverModel');
+const caregiverService = require('../services/caregiverService');
 
-exports.createCaregiver = async (req, res) => {
+/**
+ * בקר לרישום מטפל חדש
+ */
+const registerCaregiver = async (req, res) => {
     try {
-        const { userId, patients, relation, experienceYears } = req.body;
+        const { name, email, password, patients } = req.body;
 
-        const caregiver = new Caregiver({
-            userId,
-            patients: patients || [],
-            relation,
-            experienceYears
-        });
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
 
-        await caregiver.save();
-        res.status(201).json({ message: "Caregiver profile created", caregiver });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        const { user, caregiver, token } = await caregiverService.registerCaregiver({ name, email, password, patients });
+        res.status(201).json({ user, caregiver, token });
+
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
 };
 
-exports.getCaregivers = async (req, res) => {
-    try {
-        const caregivers = await Caregiver.find().populate('userId patients');
-        res.status(200).json(caregivers);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
+module.exports = { registerCaregiver };
