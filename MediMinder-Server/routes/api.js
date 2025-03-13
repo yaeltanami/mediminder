@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 // חיבור כל הנתיבים במקום אחד
-router.use('/auth', require('./authRoutes'));
+router.use('/users', require('./userRoutes'));
 router.use('/patients', require('./patientRoutes'));
 router.use('/caregivers', require('./caregiverRoutes'));
 router.use('/medications', require('./medicationRoutes'));
