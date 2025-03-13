@@ -11,5 +11,17 @@ async function createMedication(req, res) {
     }
 }
 
+// קבלת כל התרופות של מטופל
+async function getMedicationsForPatient(req, res) {
+    const { patientId } = req.params;
+    try {
+        const medications = await medicationService.getMedicationsForPatient(patientId);
+        res.status(200).json(medications);  // מחזירים את כל התרופות של המטופל
+    } catch (error) {
+        res.status(500).json({ message: 'Error getting medications', error });
+    }
+}
+
 module.exports = {
-    createMedication}
+    createMedication, getMedicationsForPatient
+}
