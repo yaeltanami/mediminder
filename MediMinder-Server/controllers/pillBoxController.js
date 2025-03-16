@@ -20,24 +20,33 @@ createPillBox = async (req, res) => {
 };
 
 /**
- * בקר להקצאת תרופה אוטומטית לתא פנוי בקופסה החכמה.
+ * 💊 הקצאת תרופה אוטומטית לתא פנוי בקופסה החכמה
+ * 
+ * @route POST /api/pillbox/assign-auto
+ * @param {string} req.body.patientId - מזהה המטופל
+ * @param {string} req.body.medicationId - מזהה התרופה
+ * @returns {object} - קופסת התרופות המעודכנת ומספר התא שנבחר
  */
-assignMedicationToAvailableSlot = async (req, res) => {
+const assignMedicationToAvailableSlot = async (req, res) => {
     try {
         const { patientId, medicationId } = req.body;
 
-        // קריאה לפונקציה שמבצעת הקצאה אוטומטית
+        if (!patientId || !medicationId) {
+            return res.status(400).json({ message: '❌ Patient ID and Medication ID are required' });
+        }
+
         const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, medicationId);
 
         res.status(200).json({ 
-            message: `Medication assigned automatically to slot ${slotNumber}`, 
+            message: `✅ Medication assigned automatically to slot ${slotNumber}`, 
             slotNumber,
             pillBox: updatedPillBox 
         });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    } catch (error) {
+        res.status(500).json({ message: '❌ Error assigning medication', error: error.message });
     }
 };
+
 
 module.exports = { createPillBox , assignMedicationToAvailableSlot };
 

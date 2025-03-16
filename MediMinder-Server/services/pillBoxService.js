@@ -24,104 +24,88 @@ const createPillBox = async (patientId) => {
     const pillBox = new PillBox({ patientId, slots });
     await pillBox.save();
 
-    console.log(`📦 קופסה חכמה נוצרה למטופל ${patientId}`);
+    console.log(`📦 Smart box created for patient ${patientId}`);
 
     return pillBox;
 };
 
 
 /**
- * הקצאת תרופה לאחד מחמשת התאים בקופסה החכמה.
+ * מקצה תרופה לתא פנוי בקופסה החכמה של המטופל.
  *
  * @param {string} patientId - מזהה המטופל.
  * @param {string} medicationId - מזהה התרופה.
- * @param {number} slotNumber - מספר התא (1-5).
- * @returns {Promise<object>} - מחזיר את הקופסה המעודכנת.
- */
-const assignMedicationToSlot = async (patientId, medicationId, slotNumber) => {
-    // בדיקה שהמספר תקין
-    if (slotNumber < 1 || slotNumber > 5) {
-        throw new Error("Invalid slot number. Must be between 1 and 5.");
-    }
-
-    // חיפוש הקופסה של המטופל
-    const pillBox = await PillBox.findOne({ patientId });
-    if (!pillBox) {
-        throw new Error("PillBox not found for this patient.");
-    }
-
-    // בדיקת קיום התרופה
-    const medication = await Medication.findById(medicationId);
-    if (!medication) {
-        throw new Error("Medication not found.");
-    }
-
-    // מציאת התא הרלוונטי בקופסה
-    const slot = pillBox.slots.find(s => s.slotNumber === slotNumber);
-    if (!slot) {
-        throw new Error("Invalid slot assignment.");
-    }
-
-    // בדיקה שהתא לא תפוס כבר
-    if (slot.status === 'filled') {
-        throw new Error(`Slot ${slotNumber} is already occupied.`);
-    }
-
-    // עדכון התא עם התרופה
-    slot.medication = medicationId;
-    slot.status = 'filled';
-    medication.slotNumber = slotNumber;
-
-    // שמירת העדכונים
-    await pillBox.save();
-    await medication.save();
-
-    console.log(`💊 התרופה "${medication.name}" הוקצתה לתא מספר ${slotNumber}`);
-
-    return pillBox;
-};
-
-/**
- * מחפש תא פנוי בקופסה החכמה של המטופל.
- * מחזיר את מספר התא הפנוי הראשון שנמצא.
- *
- * @param {string} patientId - מזהה המטופל.
- * @returns {number | null} - מספר התא הפנוי או `null` אם אין מקום פנוי.
- */
-const findEmptySlot = async (patientId) => {
-    const pillBox = await PillBox.findOne({ patientId });
-
-    if (!pillBox) {
-        throw new Error("PillBox not found for this patient.");
-    }
-
-    // חיפוש התא הראשון שעדיין ריק
-    const emptySlot = pillBox.slots.find(slot => slot.status === 'empty');
-
-    return emptySlot ? emptySlot.slotNumber : null;
-};
-
-/**
- * מקבל מטופל ותרופה, ומכניס את התרופה לתא פנוי בקופסה.
- * אם אין מקום פנוי, מחזיר שגיאה.
- *
- * @param {string} patientId - מזהה המטופל.
- * @param {string} medicationId - מזהה התרופה.
- * @returns {Promise<object>} - מחזיר את הקופסה המעודכנת.
+ * @returns {Promise<object>} - מחזיר את הקופסה המעודכנת ואת מספר התא.
  */
 const assignMedicationToAvailableSlot = async (patientId, medicationId) => {
-    // חיפוש תא פנוי
-    const slotNumber = await findEmptySlot(patientId);
-    if (!slotNumber) {
-        throw new Error("No available slots in the pillbox.");
+    try {
+        const pillBox = await PillBox.findOne({ patientId });
+
+        if (!pillBox) {
+            throw new Error("❌ No pillbox found for this patient.");
+        }
+
+        // חיפוש התא הפנוי הראשון
+        const slot = pillBox.slots.find(s => s.status === 'empty');
+
+        if (!slot) {
+            throw new Error("❌ No available slots in the pillbox.");
+        }
+
+        // עדכון התא עם התרופה
+        slot.medication = medicationId;
+        slot.status = 'filled';
+
+        await pillBox.save();
+
+        console.log(`💊 The medication was assigned to slot number ${slot.slotNumber}`);
+
+        return { updatedPillBox: pillBox, slotNumber: slot.slotNumber };
+    } catch (error) {
+        console.error("❌ Error assigning medication:", error);
+        throw error;
     }
-
-    // שימוש בפונקציה שכבר כתבנו להקצאת התרופה לתא שנמצא פנוי
-    const updatedPillBox = await assignMedicationToSlot(patientId, medicationId, slotNumber);
-
-    console.log(`💊 התרופה הוקצתה אוטומטית לתא ${slotNumber}`);
-
-    return { updatedPillBox, slotNumber };
 };
 
-module.exports = { createPillBox, assignMedicationToSlot, assignMedicationToAvailableSlot };
+/**
+ * פונקציה להסרת תרופה מהתא בקופסה החכמה.
+ * אם התרופה נמצאת בתא כלשהו, התא יהפוך ל"empty".
+ *
+ * @param {string} patientId - מזהה המטופל.
+ * @param {string} medicationId - מזהה התרופה למחיקה.
+ * @returns {Promise<object>} - מחזיר את הקופסה המעודכנת.
+ */
+const removeMedicationFromPillBox = async (patientId, medicationId) => {
+    try {
+        const pillBox = await PillBox.findOne({ patientId });
+
+        if (!pillBox) {
+            console.log("❌ No pillbox found for this patient.");
+            return { message: "No pillbox found" };
+        }
+
+        // מציאת התא שבו נמצאת התרופה
+        const slot = pillBox.slots.find(slot => slot.medication?.toString() === medicationId);
+        
+        if (!slot) {
+            console.log("❌ Medication not found in any slot.");
+            return { message: "Medication not found in pillbox" };
+        }
+
+        // ניקוי התא
+        slot.medication = null;
+        slot.status = "empty";
+
+        await pillBox.save();
+
+        console.log(`📦 Slot number ${slot.slotNumber} is now empty`);
+        return pillBox;
+    } catch (error) {
+        console.error("❌ Error removing medication from pillbox:", error);
+        throw error;
+    }
+};
+
+
+module.exports = { createPillBox,  
+    assignMedicationToAvailableSlot, removeMedicationFromPillBox };

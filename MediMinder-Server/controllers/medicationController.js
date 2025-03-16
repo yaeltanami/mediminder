@@ -3,12 +3,18 @@ const medicationService = require('../services/medicationsService');
 /**
  * בקר להוספת תרופה חדשה למטופל
  */
+
 async function createMedication(req, res) {
-    const { patientId, name, dose, times, slotNumber } = req.body;
     try {
-        // קריאה לשירות שמוסיף את התרופה למטופל
-        const medication = await medicationService.addMedication(patientId, name, dose, times, slotNumber);
-        res.status(201).json(medication);  // החזרת התרופה שנוספה
+        const { patientId, name, dose, times } = req.body;
+
+        if (!patientId || !name || !dose || !times) {
+            return res.status(400).json({ message: '❌ All fields are required' });
+        }
+
+        const result = await medicationService.addMedication(patientId, name, dose, times);
+
+        res.status(201).json(result);
     } catch (error) {
         res.status(500).json({ message: '❌ Error adding medication', error: error.message });
     }
@@ -27,7 +33,41 @@ async function getMedicationsForPatient(req, res) {
     }
 }
 
+/**
+ * בקר למחיקת תרופה.
+ */
+const deleteMedication = async (req, res) => {
+    try {
+        const { medicationId } = req.params;
+        const response = await medicationService.deleteMedication(medicationId);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+/**
+ * בקר לעדכון תרופה קיימת.
+ */
+const updateMedication = async (req, res) => {
+    try {
+        const { medicationId } = req.params;
+        const updateData = req.body;
+
+        const updatedMedication = await medicationService.updateMedication(medicationId, updateData);
+
+        res.status(200).json({
+            message: "Medication updated successfully",
+            medication: updatedMedication
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createMedication,
-    getMedicationsForPatient
+    getMedicationsForPatient,
+    deleteMedication,
+    updateMedication
 };

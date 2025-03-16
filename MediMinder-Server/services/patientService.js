@@ -1,38 +1,43 @@
 const Patient = require('../models/patientModel');
 const PillBox = require('../models/pillBoxModel');
 const userService = require('./userService');
+const pillBoxService = require('./pillBoxService');
+
+
 
 /**
- * יצירת מטופל (`Patient`) עם `User` ו- `PillBox`
+ * רישום מטופל חדש ויצירת קופסת תרופות אוטומטית.
+ *
+ * @param {string} name - שם המטופל
+ * @param {string} email - כתובת המייל
+ * @param {string} password - סיסמה
+ * @param {date} birthDate - תאריך לידה
+ * @param {array} caregivers - מזהי המטפלים
+ * @returns {object} - מחזיר את המשתמש, המטופל וקופסת התרופות שנוצרה
  */
 
-
-const registerPatient = async ({ name, email, password, birthDate, caregivers, pillbox }) => {
+const registerPatient = async ({ name, email, password, birthDate, caregivers}) => {
     const user = await userService.registerUser({ name, email, password, role: 'patient' });
 
     const patient = await Patient.create({
         userId: user._id,
         birthDate,
-        caregivers: caregivers || []
+        caregivers: caregivers || [],
+        medications: [] 
     });
 
-    // יצירת `PillBox` אם סופק בבקשה
-    let createdPillBox = null;
-    if (pillbox) {
-        createdPillBox = await PillBox.create({
-            patientId: patient._id,
-            compartments: pillbox.compartments || 5 // ברירת מחדל: 5 תאים
-        });
+    // יצירת `PillBox` כברירת מחדל לכל מטופל חדש
+    const pillBox = await pillBoxService.createPillBox(patient._id);
 
-        // עדכון המטופל כך שיקושר ל-PillBox
-        patient.pillBox = createdPillBox._id;
-        await patient.save();
-    }
+
+    // קישור `PillBox` שנוצר למטופל
+    patient.pillBox = pillBox._id;
+    await patient.save();
 
     // יצירת טוקן
     const token = userService.generateToken(user._id, user.role);
 
-    return { user, patient, pillBox: createdPillBox, token };
+    return { user, patient, pillBox, token };
 };
 
 module.exports = { registerPatient };

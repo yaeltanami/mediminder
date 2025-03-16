@@ -38,4 +38,16 @@ const loginUser = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser };
+/**
+ * בקר למחיקת משתמש
+ */
+const deleteUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const response = await userService.deleteUser(userId);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+module.exports = { registerUser, loginUser, deleteUser };
