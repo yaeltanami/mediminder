@@ -2,6 +2,7 @@ const Patient = require('../models/patientModel');
 const PillBox = require('../models/pillBoxModel');
 const userService = require('./userService');
 const pillBoxService = require('./pillBoxService');
+const Medication = require('../models/medicationModel');
 
 
 
@@ -40,4 +41,30 @@ const registerPatient = async ({ name, email, password, birthDate, caregivers}) 
     return { user, patient, pillBox, token };
 };
 
-module.exports = { registerPatient };
+
+/**
+ * Sends a reminder notification to a patient to take their medication.
+ *
+ * @param {string} patientId - The patient's ID
+ * @param {string} medicationId - The medication's ID
+ */
+const sendPatientReminder = async (patientId, medicationId) => {
+    try {
+        // Fetch medication details from the database
+        const medication = await Medication.findById(medicationId);
+
+        if (!medication) {
+            console.error(`❌ Medication with ID ${medicationId} not found.`);
+            return;
+        }
+
+        console.log(`📢 Reminder sent to patient ${patientId}: Please take your medication - ${medication.name}`);
+
+        // Here you can integrate push notifications or SMS sending
+        // Example: sendPushNotification(patientId, `Time to take your medication: ${medication.name}`);
+    } catch (error) {
+        console.error('❌ Error sending reminder to patient:', error);
+    }
+};
+
+module.exports = { registerPatient, sendPatientReminder };
