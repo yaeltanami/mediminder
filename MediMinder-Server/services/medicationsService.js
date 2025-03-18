@@ -1,0 +1,129 @@
+const Medication = require('../models/medicationModel');
+const Patient = require('../models/patientModel');
+const PillBox = require('../models/pillBoxModel');
+const pillBoxService = require('../services/pillBoxService');
+
+
+/**
+ * הוספת תרופה חדשה למטופל ושיבוצה לתא פנוי בקופסת התרופות.
+ *
+ * @param {string} patientId - מזהה המטופל
+ * @param {string} name - שם התרופה
+ * @param {string} dose - מינון
+ * @param {array} times - שעות הנטילה
+ * @returns {Promise<object>} - מחזיר את התרופה החדשה ואת ההודעה למשתמש
+ */
+const addMedication = async (patientId, name, dose, times) => {
+    try {
+        // יצירת התרופה ושמירתה במסד הנתונים
+        let newMedication = new Medication({ patientId, name, dose, times });
+        let savedMedication = await newMedication.save();
+
+        // הוספת התרופה לרשימת התרופות של המטופל
+        await Patient.findByIdAndUpdate(patientId, { $push: { medications: savedMedication._id } });
+
+        // שיבוץ התרופה לתא פנוי בקופסה
+        const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, savedMedication._id);
+
+                // ✅ עדכון התרופה עם מספר התא שנבחר בקופסה
+                savedMedication.slotNumber = slotNumber;
+                await savedMedication.save();
+
+        return {
+            message: `🔔 הכנס את התרופה '${name}' לתא מספר ${slotNumber}`,
+            medication: savedMedication,
+            slotNumber,
+            pillBox: updatedPillBox
+        };
+    } catch (error) {
+        console.error('❌ Error adding medication:', error);
+        throw error;
+    }
+};
+
+/**
+ * שליפת כל התרופות של מטופל מסוים.
+ *
+ * @param {string} patientId - מזהה המטופל
+ * @returns {Promise<Array<object>>} - מחזיר מערך של כל התרופות של המטופל
+ */
+async function getMedicationsForPatient(patientId) {
+    try {
+        const medications = await Medication.find({ patientId });
+        return medications;
+    } catch (error) {
+        console.error('❌ Error getting medications:', error);
+        throw error;
+    }
+}
+
+/**
+ * פונקציה למחיקת תרופה ממסד הנתונים והסרתה מהמטופל ומהקופסה.
+ *
+ * @param {string} medicationId - מזהה התרופה למחיקה.
+ * @returns {Promise<object>} - מחזיר הודעה המאשרת את המחיקה.
+ */
+const deleteMedication = async (medicationId) => {
+    try {
+        // בדיקה אם התרופה קיימת
+        const medication = await Medication.findById(medicationId);
+        if (!medication) {
+            throw new Error("Medication not found.");
+        }
+
+        // הסרת התרופה ממטופל
+        await Patient.findByIdAndUpdate(medication.patientId, {
+            $pull: { medications: medicationId }
+        });
+
+        // מחיקת התרופה מהתא בקופסה
+        await pillBoxService.removeMedicationFromPillBox(medication.patientId, medicationId);
+
+        // מחיקת התרופה ממסד הנתונים
+        await Medication.findByIdAndDelete(medicationId);
+
+        console.log(`🗑️ Medication '${medication.name}' was successfully deleted`);
+
+        return { message: "Medication deleted successfully" };
+    } catch (error) {
+        console.error("❌ Error deleting medication:", error);
+        throw error;
+    }
+};
+
+/**
+ * עדכון תרופה קיימת - שינוי שם, מינון או שעות נטילה.
+ *
+ * @param {string} medicationId - מזהה התרופה
+ * @param {object} updateData - הנתונים שצריך לעדכן
+ * @returns {Promise<object>} - התרופה לאחר העדכון
+ */
+const updateMedication = async (medicationId, updateData) => {
+    try {
+        // חיפוש התרופה במסד הנתונים
+        const medication = await Medication.findById(medicationId);
+        if (!medication) {
+            throw new Error("Medication not found.");
+        }
+
+        // עדכון הנתונים רק אם התקבלו שדות רלוונטיים
+        if (updateData.name) medication.name = updateData.name;
+        if (updateData.dose) medication.dose = updateData.dose;
+        if (updateData.times) medication.times = updateData.times;
+
+        // שמירת השינויים במסד הנתונים
+        const updatedMedication = await medication.save();
+
+        console.log(`✏️ Medication '${updatedMedication.name}' was successfully updated`);
+        return updatedMedication;
+    } catch (error) {
+        console.error("❌ Error updating medication:", error);
+        throw error;
+    }
+};
+module.exports = {
+    addMedication,
+    getMedicationsForPatient,
+    deleteMedication,
+    updateMedication
+};

@@ -1,8 +1,12 @@
 const express = require('express');
-const { createCaregiver, getCaregivers } = require('../controllers/caregiverController');
-
 const router = express.Router();
-router.post('/create', createCaregiver);
-router.get('/', getCaregivers);
+const caregiverController = require('../controllers/caregiverController');
+
+// רישום מטפל חדש
+router.post('/register', caregiverController.registerCaregiver);
+// הוספת מטופל למטפל
+router.post('/add-patient', caregiverController.addPatientToCaregiver);
+// הסרת מטופל ממטפל
+router.post('/remove-patient', caregiverController.removePatientFromCaregiver);
 
 module.exports = router;

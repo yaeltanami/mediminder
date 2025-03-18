@@ -1,42 +1,52 @@
 const PillBox = require('../models/pillBoxModel');
 const Medication = require('../models/medicationModel');
+const pillBoxService = require('../services/pillBoxService');
 
-exports.assignMedicationToSlot = async (req, res) => {
+/**
+ * בקר ליצירת קופסה חכמה למטופל.
+ * קורא לפונקציית `createPillBox` שב-`services/pillBoxService.js`
+ */
+createPillBox = async (req, res) => {
     try {
-        const { patientId, medicationId, slotNumber } = req.body;
+        const { patientId } = req.body;
 
-        if (slotNumber < 1 || slotNumber > 5) {
-            return res.status(400).json({ message: "Invalid slot number. Must be between 1 and 5." });
-        }
+        // קריאה ללוגיקה העסקית ליצירת קופסה חכמה
+        const pillBox = await pillBoxService.createPillBox(patientId);
 
-        const pillBox = await PillBox.findOne({ patientId });
-        if (!pillBox) {
-            return res.status(404).json({ message: "PillBox not found for this patient." });
-        }
-
-        const medication = await Medication.findById(medicationId);
-        if (!medication) {
-            return res.status(404).json({ message: "Medication not found." });
-        }
-
-        // מציאת התא הרלוונטי והכנסת התרופה
-        const slot = pillBox.slots.find(s => s.slotNumber === slotNumber);
-        if (!slot) {
-            return res.status(400).json({ message: "Invalid slot assignment." });
-        }
-
-        slot.medication = medicationId;
-        slot.status = 'filled';
-        medication.slotNumber = slotNumber;
-
-        await pillBox.save();
-        await medication.save();
-
-        console.log(`💊 התרופה "${medication.name}" הוקצתה לתא מספר ${slotNumber}`);
-
-        res.status(200).json({ message: `Medication assigned to slot ${slotNumber}`, pillBox });
-
+        res.status(201).json({ message: "PillBox created successfully", pillBox });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
+/**
+ * 💊 הקצאת תרופה אוטומטית לתא פנוי בקופסה החכמה
+ * 
+ * @route POST /api/pillbox/assign-auto
+ * @param {string} req.body.patientId - מזהה המטופל
+ * @param {string} req.body.medicationId - מזהה התרופה
+ * @returns {object} - קופסת התרופות המעודכנת ומספר התא שנבחר
+ */
+const assignMedicationToAvailableSlot = async (req, res) => {
+    try {
+        const { patientId, medicationId } = req.body;
+
+        if (!patientId || !medicationId) {
+            return res.status(400).json({ message: '❌ Patient ID and Medication ID are required' });
+        }
+
+        const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, medicationId);
+
+        res.status(200).json({ 
+            message: `✅ Medication assigned automatically to slot ${slotNumber}`, 
+            slotNumber,
+            pillBox: updatedPillBox 
+        });
+    } catch (error) {
+        res.status(500).json({ message: '❌ Error assigning medication', error: error.message });
+    }
+};
+
+
+module.exports = { createPillBox , assignMedicationToAvailableSlot };
+

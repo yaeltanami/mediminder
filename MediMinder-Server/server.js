@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const reminderService = require('./services/reminderService');  
 
 dotenv.config();
 connectDB();
