@@ -8,5 +8,8 @@ router.post('/register', caregiverController.registerCaregiver);
 router.post('/add-patient', caregiverController.addPatientToCaregiver);
 // הסרת מטופל ממטפל
 router.post('/remove-patient', caregiverController.removePatientFromCaregiver);
+// החזרת כל מטופליו של מטפל מסוים
+router.get('/patients/:caregiverId', caregiverController.getPatientsForCaregiver);
+
 
 module.exports = router;

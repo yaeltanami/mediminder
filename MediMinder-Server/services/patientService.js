@@ -67,4 +67,27 @@ const sendPatientReminder = async (patientId, medicationId) => {
     }
 };
 
-module.exports = { registerPatient, sendPatientReminder };
+/**
+ * Retrieves the list of caregiver IDs assigned to a patient.
+ *
+ * @param {string} patientId - The ID of the patient.
+ * @returns {Promise<Array<string>>} - The list of caregiver IDs.
+ */
+const getCaregiversForPatient = async (patientId) => {
+    try {
+        // חיפוש המטופל ושליפת כל המטפלים שלו, אך מחזירים רק את ה-ID
+        const patient = await Patient.findById(patientId).populate('caregivers', '_id');
+
+        if (!patient) {
+            throw new Error("Patient not found.");
+        }
+
+        // מחזירים רק מערך של מזהי המטפלים
+        return patient.caregivers.map(caregiver => caregiver._id);
+    } catch (error) {
+        console.error("❌ Error retrieving caregivers for patient:", error);
+        throw error;
+    }
+};
+
+module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient };

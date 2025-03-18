@@ -65,9 +65,24 @@ const updateMedication = async (req, res) => {
     }
 };
 
+/**
+ * Controller to get a specific medication by its ID.
+ */
+const getMedicationById = async (req, res) => {
+    try {
+        const { medicationId } = req.params;
+        console.log(`🔎 Searching for medication ID: ${medicationId}`);
+        const medication = await medicationService.getMedicationById(medicationId);
+        res.status(200).json(medication);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createMedication,
     getMedicationsForPatient,
     deleteMedication,
-    updateMedication
+    updateMedication,
+    getMedicationById
 };
