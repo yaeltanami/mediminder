@@ -105,4 +105,26 @@ const removePatientFromCaregiver = async (caregiverId, patientId) => {
     }
 };
 
-module.exports = { registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver };
+/**
+ * Retrieves the list of patients assigned to a caregiver.
+ *
+ * @param {string} caregiverId - The ID of the caregiver.
+ * @returns {Promise<Array<string>>} - The list of patient IDs.
+ */
+const getPatientsForCaregiver = async (caregiverId) => {
+    try {
+        // חיפוש המטפל ושליפת כל המטופלים שלו, אך מחזירים רק את ה-ID
+        const caregiver = await Caregiver.findById(caregiverId).populate('patients', '_id');
+
+        if (!caregiver) {
+            throw new Error("Caregiver not found.");
+        }
+
+        return caregiver.patients;
+    } catch (error) {
+        console.error("❌ Error retrieving patients for caregiver:", error);
+        throw error;
+    }
+};
+
+module.exports = { registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver, getPatientsForCaregiver };

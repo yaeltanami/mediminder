@@ -44,4 +44,17 @@ const removePatientFromCaregiver = async (req, res) => {
     }
 };
 
-module.exports = { registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver };
+/**
+ * Controller to get the list of patients for a specific caregiver.
+ */
+const getPatientsForCaregiver = async (req, res) => {
+    try {
+        const { caregiverId } = req.params;
+        const patients = await caregiverService.getPatientsForCaregiver(caregiverId);
+        res.status(200).json(patients);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
+
+module.exports = { registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver, getPatientsForCaregiver };

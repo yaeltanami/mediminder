@@ -121,9 +121,32 @@ const updateMedication = async (medicationId, updateData) => {
         throw error;
     }
 };
+
+/**
+ * Retrieves medication details by medicationId.
+ *
+ * @param {string} medicationId - The ID of the medication.
+ * @returns {Promise<object>} - The medication details.
+ */
+const getMedicationById = async (medicationId) => {
+    try {
+        const medication = await Medication.findById(medicationId);
+        
+        if (!medication) {
+            throw new Error("Medication not found.");
+        }
+
+        return medication;
+    } catch (error) {
+        console.error("❌ Error retrieving medication:", error);
+        throw error;
+    }
+};
+
 module.exports = {
     addMedication,
     getMedicationsForPatient,
     deleteMedication,
-    updateMedication
+    updateMedication,
+    getMedicationById
 };

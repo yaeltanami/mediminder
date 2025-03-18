@@ -1,4 +1,6 @@
 const PillBox = require('../models/pillBoxModel');
+const Medication = require('../models/medicationModel');
+
 
 /**
  * פונקציה ליצירת קופסה חכמה עבור מטופל.
@@ -107,5 +109,48 @@ const removeMedicationFromPillBox = async (patientId, medicationId) => {
 };
 
 
-module.exports = { createPillBox,  
-    assignMedicationToAvailableSlot, removeMedicationFromPillBox };
+/**
+ * Retrieves the pillbox status for a specific patient.
+ *
+ * @param {string} patientId - The ID of the patient.
+ * @returns {Promise<object>} - The pillbox status with slot details.
+ */
+const getPillBoxStatus = async (patientId) => {
+    try {
+        // חיפוש קופסת התרופות של המטופל
+        const pillBox = await PillBox.findOne({ patientId });
+
+        if (!pillBox) {
+            throw new Error("PillBox not found for this patient.");
+        }
+
+        // מיפוי התאים עם סטטוס (ריק או שם התרופה)
+        const slots = await Promise.all(
+            pillBox.slots.map(async (slot) => {
+                if (slot.status === 'empty') {
+                    return { slotNumber: slot.slotNumber, status: "Empty" };
+                } else {
+                    const medication = await Medication.findById(slot.medication);
+                    return {
+                        slotNumber: slot.slotNumber,
+                        status: medication ? medication.name : "Unknown Medication"
+                    };
+                }
+            })
+        );
+
+        return { patientId, slots };
+    } catch (error) {
+        console.error("❌ Error retrieving pillbox status:", error);
+        throw error;
+    }
+};
+
+
+
+module.exports = { 
+    createPillBox,  
+    assignMedicationToAvailableSlot,
+     removeMedicationFromPillBox,
+     getPillBoxStatus
+     };

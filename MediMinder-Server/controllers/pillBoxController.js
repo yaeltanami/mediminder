@@ -6,7 +6,7 @@ const pillBoxService = require('../services/pillBoxService');
  * בקר ליצירת קופסה חכמה למטופל.
  * קורא לפונקציית `createPillBox` שב-`services/pillBoxService.js`
  */
-createPillBox = async (req, res) => {
+const createPillBox = async (req, res) => {
     try {
         const { patientId } = req.body;
 
@@ -47,6 +47,23 @@ const assignMedicationToAvailableSlot = async (req, res) => {
     }
 };
 
+/**
+ * Controller to get the pillbox status for a specific patient.
+ */
+const getPillBoxStatus = async (req, res) => {
+    try {
+        const { patientId } = req.params;
+        const pillBoxStatus = await pillBoxService.getPillBoxStatus(patientId);
+        res.status(200).json(pillBoxStatus);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
 
-module.exports = { createPillBox , assignMedicationToAvailableSlot };
+
+module.exports = {
+     createPillBox ,
+      assignMedicationToAvailableSlot,
+      getPillBoxStatus
+     };
 

@@ -19,4 +19,18 @@ const registerPatient = async (req, res) => {
     }
 };
 
-module.exports = { registerPatient };
+/**
+ * Controller to get the list of caregiver IDs for a specific patient.
+ */
+const getCaregiversForPatient = async (req, res) => {
+    try {
+        const { patientId } = req.params;
+        const caregiverIds = await patientService.getCaregiversForPatient(patientId);
+        res.status(200).json(caregiverIds);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
+
+
+module.exports = { registerPatient, getCaregiversForPatient };
