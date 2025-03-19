@@ -1,13 +1,12 @@
-// lib/login_screen.dart
 import 'package:flutter/material.dart';
+import '../home_screen.dart'; // ייבוא מסך ראשי
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});  // הוספת key
+  const LoginScreen({super.key});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
-
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
@@ -18,17 +17,24 @@ class _LoginScreenState extends State<LoginScreen> {
     String username = _usernameController.text;
     String password = _passwordController.text;
 
-    // כאן נוסיף את הלוגיקה לוודא שהמשתמש והסיסמה נכונים
-    // לדוגמה, נוכל להציג הודעה אם הם נכונים או לא
-    if (username == "test" && password == "password") {
+    // כל שם משתמש וסיסמה יעבירו למסך הבא
+    if (username.isNotEmpty && password.isNotEmpty) {
       // במקרה של התחברות מוצלחת, אנחנו פשוט מציגים הודעה
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Login Successful!")),
       );
+
+      // פעולת הניווט למסך הראשי והעברת שם המשתמש
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(username: username), // העברת שם המשתמש למסך הבא
+        ),
+      );
     } else {
-      // במקרה של כישלון בהתחברות
+      // במקרה של כישלון בהתחברות (לא הוזנו שם משתמש או סיסמה)
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid username or password")),
+        const SnackBar(content: Text("Please enter both username and password")),
       );
     }
   }
