@@ -11,21 +11,21 @@ class LoginButton extends StatelessWidget {
     return Positioned(
       left: screenWidth * 0.1,
       top: screenHeight * 0.75,
-      child: Container(
+      child: SizedBox(
         width: screenWidth * 0.8,
         height: screenHeight * 0.07,
-        decoration: ShapeDecoration(
-          color: const Color(0xFF196EB0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
         child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF196EB0), // הגדרת צבע הרקע
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
           onPressed: () {
             // ניווט למסך ה-login
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => LoginScreen()), // מעבר למסך login_screen.dart
+              MaterialPageRoute(builder: (context) => const LoginScreen()), // מעבר למסך login_screen.dart
             );
           },
           child: const Center(

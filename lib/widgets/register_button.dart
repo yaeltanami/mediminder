@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/RoleSelectionScreen.dart';  // ייבוא מסך ההרשמה
 
 class RegisterButton extends StatelessWidget {
   const RegisterButton({required this.screenWidth, required this.screenHeight});
@@ -10,28 +11,34 @@ class RegisterButton extends StatelessWidget {
     return Positioned(
       left: screenWidth * 0.1,
       top: screenHeight * 0.85,
-      child: Container(
+      child: SizedBox(
         width: screenWidth * 0.8,
         height: screenHeight * 0.07,
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(
-              width: 1,
-              color: Color(0xFF196EB0),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white, // רקע לבן
+            side: const BorderSide(color: Color(0xFF196EB0), width: 2), // מסגרת כחולה
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30), // קצוות מעוגלים
             ),
-            borderRadius: BorderRadius.circular(8),
           ),
-        ),
-        child: const Center(
-          child: Text(
-            'Register',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF196EB0),
-              fontSize: 22,
-              fontFamily: 'Urbanist',
-              fontWeight: FontWeight.w600,
+          onPressed: () {
+            // ניווט למסך ההרשמה
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => RoleSelectionScreen()), // מעבר למסך RoleSelectionScreen
+            );
+          },
+          child: const Center(
+            child: Text(
+              'Register',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF196EB0), // טקסט כחול
+                fontSize: 22,
+                fontFamily: 'Urbanist',
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../home_screen.dart'; // ייבוא מסך ראשי
+import 'home_screen.dart'; // ייבוא מסך ראשי
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
