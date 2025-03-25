@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class RegisterScreen extends StatefulWidget {
   final String role; // תפקיד שהועבר מהמסך הקודם (מטפל או מטופל)
 
-  RegisterScreen({required this.role});
+  const RegisterScreen({required this.role});
 
   @override
   _RegisterScreenState createState() => _RegisterScreenState();

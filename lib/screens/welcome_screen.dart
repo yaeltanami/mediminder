@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/login_screen.dart';  // ייבוא מסך התחברות
+// import '../screens/login_screen.dart';  // ייבוא מסך התחברות
 import '../widgets/login_button.dart';  // ייבוא כפתור התחברות
 import '../widgets/register_button.dart';  // ייבוא כפתור רישום
 import '../widgets/app_logo.dart';  // ייבוא תמונת הלוגו

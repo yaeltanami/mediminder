@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/RoleSelectionScreen.dart';  // ייבוא מסך ההרשמה
+import '../screens/role_selection_screen.dart';  // ייבוא מסך ההרשמה
 
 class RegisterButton extends StatelessWidget {
   const RegisterButton({required this.screenWidth, required this.screenHeight});
