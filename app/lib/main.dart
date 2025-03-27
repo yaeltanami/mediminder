@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/welcome_screen.dart'; // ייבוא של מסך ה-Welcome
+import 'screens/reminder_screen.dart'; // ייבוא של מסך ה-Welcome
 
 void main() {
   runApp(const MyApp());

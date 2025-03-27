@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; // ייבוא מסך ראשי
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'home_screen.dart';
+
+const String baseUrl = 'http://10.100.102.14:5050/api'; // כתובת השרת
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,32 +14,57 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // פונקציה שמבצעת את הפעולה כשלוחצים על כפתור ההתחברות
+  /// פונקציה ששולחת בקשת POST לשרת כדי לבדוק התחברות
+  Future<void> loginUser(String email, String password) async {
+    final url = Uri.parse('$baseUrl/users/login');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("\u2705 Login successful! Token: \${data['token']}");
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(username: data['user']['name']),
+          ),
+        );
+      } else {
+        print('\u274C Login failed: \${response.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Login failed. Please try again.")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("An error occurred.")),
+      );
+    }
+  }
+
+  /// פונקציה שתופעל בעת לחיצה על כפתור ההתחברות
   void _login() {
-    String username = _usernameController.text;
+    String email = _emailController.text.trim();
     String password = _passwordController.text;
 
-    // כל שם משתמש וסיסמה יעבירו למסך הבא
-    if (username.isNotEmpty && password.isNotEmpty) {
-      // במקרה של התחברות מוצלחת, אנחנו פשוט מציגים הודעה
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login Successful!")),
-      );
-
-      // פעולת הניווט למסך הראשי והעברת שם המשתמש
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(username: username), // העברת שם המשתמש למסך הבא
-        ),
-      );
+    if (email.isNotEmpty && password.isNotEmpty) {
+      loginUser(email, password);
     } else {
-      // במקרה של כישלון בהתחברות (לא הוזנו שם משתמש או סיסמה)
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter both username and password")),
+        const SnackBar(content: Text("Please enter both email and password")),
       );
     }
   }
@@ -51,21 +81,18 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // שדה להזנת שם משתמש
               TextField(
-                controller: _usernameController,
+                controller: _emailController,
                 decoration: const InputDecoration(
-                  labelText: 'Username',
-                  hintText: 'Enter your username',
+                  labelText: 'Email',
+                  hintText: 'Enter your email',
                   border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 20),
-              
-              // שדה להזנת סיסמה
               TextField(
                 controller: _passwordController,
-                obscureText: true, // כדי להסתיר את הסיסמה
+                obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'Password',
                   hintText: 'Enter your password',
@@ -73,10 +100,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // כפתור התחברות
               ElevatedButton(
-                onPressed: _login, // הפונקציה שתופעל בעת לחיצה
+                onPressed: _login,
                 child: const Text('Login'),
               ),
             ],
