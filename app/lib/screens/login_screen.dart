@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:provider/provider.dart'; // הוספת Provider
+import '../providers/auth_provider.dart'; // ייבוא מחלקת ה-AuthProvider
 import 'home_screen.dart';
-
-const String baseUrl = 'http://10.100.102.14:5050/api'; // כתובת השרת
+import '../config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// פונקציה ששולחת בקשת POST לשרת כדי לבדוק התחברות
   Future<void> loginUser(String email, String password) async {
-    final url = Uri.parse('$baseUrl/users/login');
+    final url = Uri.parse('${Config.baseUrl}/users/login');
 
     try {
       final response = await http.post(
@@ -33,16 +33,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("\u2705 Login successful! Token: \${data['token']}");
+        print("\u2705 Login successful! Token: ${data['token']}");
 
-        Navigator.push(
+        // עדכון הנתונים ב-AuthProvider
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        authProvider.setUser(data['user']); // שמירת פרטי המשתמש
+        authProvider.setToken(data['token']); // שמירת הטוקן
+
+        // מעבר למסך הבית
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => HomeScreen(username: data['user']['name']),
-          ),
+          MaterialPageRoute(builder: (context) => HomeScreen()),
         );
       } else {
-        print('\u274C Login failed: \${response.body}');
+        print('\u274C Login failed: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Login failed. Please try again.")),
         );

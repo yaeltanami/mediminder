@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
-import 'screens/welcome_screen.dart'; // ייבוא של מסך ה-Welcome
-import 'screens/reminder_screen.dart'; // ייבוא של מסך ה-Welcome
+import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart'; // הוספת Provider לניהול משתמשים
+import 'screens/welcome_screen.dart';
+import 'screens/home_screen.dart'; // נוסיף את מסך הבית
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthProvider()), // יצירת ה-Provider
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -12,10 +21,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData.dark().copyWith(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light().copyWith(
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: WelcomeScreen(),  // הצגת מסך ה-Welcome
+      home: Consumer<AuthProvider>(
+        builder: (context, authProvider, child) {
+          return authProvider.user != null ? HomeScreen() : WelcomeScreen();
+        },
+      ),
     );
   }
 }
