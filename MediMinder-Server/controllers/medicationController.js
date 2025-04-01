@@ -87,10 +87,27 @@ const getMedicationById = async (req, res) => {
     }
 };
 
+// תרופות לפי יום
+const getMedicationsByDay = async (req, res) => {
+    const { patientId, day } = req.params;
+  
+    try {
+      const medications = await medicationService.getMedicationsForPatient(patientId);
+  
+      // סינון לפי יום הרצוי
+      const filtered = medications.filter(med => med.days.includes(day));
+      res.status(200).json(filtered);
+    } catch (error) {
+      res.status(500).json({ message: '❌ Error getting medications for day', error: error.message });
+    }
+  };
+  
+
 module.exports = {
     createMedication,
     getMedicationsForPatient,
     deleteMedication,
     updateMedication,
-    getMedicationById
+    getMedicationById, 
+    getMedicationsByDay
 };
