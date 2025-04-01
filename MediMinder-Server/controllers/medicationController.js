@@ -6,13 +6,21 @@ const medicationService = require('../services/medicationsService');
 
 async function createMedication(req, res) {
     try {
-        const { patientId, name, dose, times } = req.body;
+        const { patientId, name, dose, times, days } = req.body;
+        console.log(`day ${days}`);
 
-        if (!patientId || !name || !dose || !times) {
+        if (!patientId || !name || !dose || !times || !days)  {
             return res.status(400).json({ message: '❌ All fields are required' });
         }
 
-        const result = await medicationService.addMedication(patientId, name, dose, times);
+                // בדיקה שכל איבר במערך תקין
+        for (let entry of times) {
+            if (!entry.time || typeof entry.pillsCount !== 'number') {
+                return res.status(400).json({ message: '❌ Each entry in times must have time and pillsCount' });
+            }
+        }
+
+        const result = await medicationService.addMedication(patientId, name, dose, times, days);
 
         res.status(201).json(result);
     } catch (error) {
@@ -79,10 +87,27 @@ const getMedicationById = async (req, res) => {
     }
 };
 
+// תרופות לפי יום
+const getMedicationsByDay = async (req, res) => {
+    const { patientId, day } = req.params;
+  
+    try {
+      const medications = await medicationService.getMedicationsForPatient(patientId);
+  
+      // סינון לפי יום הרצוי
+      const filtered = medications.filter(med => med.days.includes(day));
+      res.status(200).json(filtered);
+    } catch (error) {
+      res.status(500).json({ message: '❌ Error getting medications for day', error: error.message });
+    }
+  };
+  
+
 module.exports = {
     createMedication,
     getMedicationsForPatient,
     deleteMedication,
     updateMedication,
-    getMedicationById
+    getMedicationById, 
+    getMedicationsByDay
 };

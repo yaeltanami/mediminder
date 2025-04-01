@@ -42,10 +42,15 @@ const createPillBox = async (patientId) => {
 const assignMedicationToAvailableSlot = async (patientId, medicationId) => {
     try {
         const pillBox = await PillBox.findOne({ patientId });
+        // const pillBox = await PillBox.findOne({ userId: patientId });
+        console.log(`pillboxser patientId ${patientId}`);
+
 
         if (!pillBox) {
             throw new Error("❌ No pillbox found for this patient.");
         }
+
+        console.log(`find!!!`);
 
         // חיפוש התא הפנוי הראשון
         const slot = pillBox.slots.find(s => s.status === 'empty');

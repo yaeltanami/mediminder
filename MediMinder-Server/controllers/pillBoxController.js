@@ -34,6 +34,7 @@ const assignMedicationToAvailableSlot = async (req, res) => {
         if (!patientId || !medicationId) {
             return res.status(400).json({ message: '❌ Patient ID and Medication ID are required' });
         }
+        console.log(`assignMedicationToAvailableSlot pId ${patientId}`);
 
         const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, medicationId);
 
