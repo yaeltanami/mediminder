@@ -2,6 +2,8 @@ const cron = require('node-cron');
 const Medication = require('../models/medicationModel');
 const Patient = require('../models/patientModel');
 const patientService = require('./patientService');
+const { activateDueMedications } = require('../controllers/espController');
+
 
 /**
  * Sends reminders to patients who need to take medication at the current time.
@@ -25,6 +27,8 @@ const sendMedicationReminders = async () => {
 
             // Call function in patientService to send the reminder
             await patientService.sendPatientReminder(patient.userId, medication._id);
+            await activateDueMedications(patient._id);
+
         }
     } catch (error) {
         console.error('❌ Error sending medication reminders:', error);

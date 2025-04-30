@@ -8,5 +8,7 @@ router.use('/patients', require('./patientRoutes'));
 router.use('/caregivers', require('./caregiverRoutes'));
 router.use('/medications', require('./medicationRoutes'));
 router.use('/pillbox', require('./pillBoxRoutes'));
+router.use('/esp', require('./espRoutes'));
+
 
 module.exports = router;

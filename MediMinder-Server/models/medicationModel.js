@@ -6,6 +6,7 @@ const medicationSchema = new mongoose.Schema({
     name: { type: String, required: true }, // שם התרופה
     dose: { type: String, required: true }, // מינון התרופה
     times: [{ type: String, required: true }], // שעות נטילה
+    days: [{ type: String, required: true }], // ימי נטילה
     slotNumber: { type: Number, min: 1, max: 5 } // מספר התא בקופסה (אם מוקצה)
 }, { timestamps: true });
 
