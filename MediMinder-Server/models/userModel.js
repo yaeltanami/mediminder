@@ -8,7 +8,9 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },  // שם המשתמש (חובה)
     email: { type: String, required: true, unique: true }, // אימייל (ייחודי וחובה)
     password: { type: String, required: true }, // סיסמה (חובה)
-    role: { type: String, enum: ['patient', 'caregiver'], required: true } // תפקיד (מטופל/מטפל)
+    role: { type: String, enum: ['patient', 'caregiver'], required: true },// תפקיד (מטופל/מטפל)
+    fcmToken: { type: String }
+
 }, { timestamps: true });
 
 /**

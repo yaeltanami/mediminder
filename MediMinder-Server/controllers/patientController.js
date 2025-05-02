@@ -1,10 +1,13 @@
 const patientService = require('../services/patientService');
+const jwt = require('jsonwebtoken');
+
 
 /**
  * בקר לרישום מטופל חדש
  */
 const registerPatient = async (req, res) => {
     try {
+        console.log("try to register");
         const { name, email, password, birthDate, caregivers } = req.body;
 
         if (!name || !email || !password || !birthDate) {

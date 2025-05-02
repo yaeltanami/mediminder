@@ -112,4 +112,47 @@ const deleteUser = async (userId) => {
     }
 };
 
-module.exports = { registerUser, loginUser, generateToken, deleteUser };
+const saveFcmToken = async (userId, fcmToken) => {
+    if (!fcmToken) {
+      throw new Error('Missing FCM token');
+    }
+  
+    const user = await User.findById(userId); 
+    if (!user) {
+      throw new Error('User not found');
+    }
+  
+    user.fcmToken = fcmToken;
+    await user.save();
+  
+    return user;
+  };
+
+  const removeFcmToken = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+  
+    user.fcmToken = null;
+    await user.save();
+  };
+
+  /**
+ * מחזירה את מזהה המטופל (Patient._id) לפי מזהה משתמש (User._id)
+ * @param {string} userId - מזהה המשתמש
+ * @returns {Promise<string>} - מזהה המטופל (Patient._id)
+ */
+const getPatientIdByUserId = async (userId) => {
+    const patient = await Patient.findOne({ userId });
+  
+    if (!patient) {
+      throw new Error('Patient not found for the given user ID');
+    }
+  
+    return patient._id;
+  };
+  
+  
+
+module.exports = { registerUser, loginUser, generateToken, deleteUser, saveFcmToken, removeFcmToken, getPatientIdByUserId };

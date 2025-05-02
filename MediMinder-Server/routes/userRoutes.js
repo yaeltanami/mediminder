@@ -11,5 +11,9 @@ router.post('/login', userController.loginUser);
 // מחיקת משתמש
 router.delete('/delete/:userId', userController.deleteUser);
 
+router.post('/save-token', userController.saveFcmToken);
+
+router.post('/remove-token', userController.removeFcmToken);
+
 
 module.exports = router;
