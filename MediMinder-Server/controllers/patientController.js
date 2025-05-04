@@ -35,5 +35,15 @@ const getCaregiversForPatient = async (req, res) => {
     }
 };
 
+const getPatientByEmail = async (req, res) => {
+    try {
+      const { email } = req.query;
+      const patient = await patientService.getPatientByEmail(email);
+      res.json(patient);
+    } catch (err) {
+      res.status(404).json({ error: err.message });
+    }
+  };
 
-module.exports = { registerPatient, getCaregiversForPatient };
+
+module.exports = { registerPatient, getCaregiversForPatient, getPatientByEmail };

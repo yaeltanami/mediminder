@@ -7,7 +7,7 @@ import 'home_screen.dart';
 import '../config.dart';
 
 class RegisterScreen extends StatefulWidget {
-  final String role; // מטפל או מטופל
+  final String role;
 
   const RegisterScreen({super.key, required this.role});
 
@@ -15,35 +15,103 @@ class RegisterScreen extends StatefulWidget {
   _RegisterScreenState createState() => _RegisterScreenState();
 }
 
+class PatientField {
+  final TextEditingController controller;
+  bool? isValid;
+
+  PatientField({required this.controller, this.isValid});
+}
+
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  final TextEditingController _relationController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _birthYearController = TextEditingController();
 
-  final _formKey = GlobalKey<FormState>();
+  final List<PatientField> _patientFields = [];
 
-  /// פונקציה לרישום משתמש חדש בשרת
-  Future<void> registerUser() async {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.role == 'caregiver') {
+      _addPatientField();
+    }
+  }
+
+  void _addPatientField() {
+    setState(() {
+      _patientFields.add(PatientField(controller: TextEditingController()));
+    });
+  }
+
+  Future<void> _validatePatient(int index) async {
+    final email = _patientFields[index].controller.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter patient email")),
+      );
+      return;
+    }
+
+    try {
+      final uri = Uri.parse('${Config.baseUrl}/patients/by-email?email=$email');
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _patientFields[index].isValid = true;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("✅ Patient found")));
+      } else {
+        setState(() {
+          _patientFields[index].isValid = false;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("❌ Patient not found")));
+      }
+    } catch (e) {
+      print("❌ Error validating patient: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error checking patient")));
+    }
+  }
+
+  Future<void> _registerUser() async {
+    final role = widget.role;
+
+    // נבנה את רשימת המטופלים רק אם מדובר במטפל
+    final validPatientEmails =
+        role == 'caregiver'
+            ? _patientFields
+                .where((f) => f.isValid == true)
+                .map((f) => f.controller.text.trim())
+                .toList()
+            : [];
+
+    // בונים נתיב מתאים לפי תפקיד
     final url = Uri.parse(
-      '${Config.baseUrl}/${widget.role == 'patient' ? 'patients' : 'caregivers'}/register',
+      '${Config.baseUrl}/${role == 'patient' ? 'patients' : 'caregivers'}/register',
     );
 
-    final Map<String, dynamic> requestData = {
-      'name': _nameController.text,
-      'email': _emailController.text,
-      'password': _passwordController.text,
+    // מכינים את גוף הבקשה לפי תפקיד
+    final requestData = {
+      'name': _nameController.text.trim(),
+      'email': _emailController.text.trim(),
+      'password': _passwordController.text.trim(),
+      if (role == 'caregiver') 'patientsEmails': validPatientEmails,
+      if (role == 'patient')
+        'birthDate': '${_birthYearController.text.trim()}-01-01',
     };
 
-    if (widget.role == 'caregiver') {
-      requestData['relation'] = _relationController.text;
-    } else if (widget.role == 'patient') {
-      requestData['birthDate'] =
-          '${_ageController.text}-01-01'; // קלט שנת לידה בלבד
-    }
+    print('📦 Sending: $requestData');
 
     try {
       final response = await http.post(
@@ -51,66 +119,115 @@ class _RegisterScreenState extends State<RegisterScreen> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestData),
       );
+      print('🔎 Status: ${response.statusCode}');
+      print('📩 Response body: ${response.body}');
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = jsonDecode(response.body);
-        print('✅ Registration successful: $responseData');
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
 
-        // שמירת נתוני המשתמש ב-Provider
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        authProvider.setUser(responseData['user']); // שמירת פרטי המשתמש
-        authProvider.setToken(responseData['token']); // שמירת הטוקן
+        authProvider.setUser(data['user']);
+        authProvider.setToken(data['token']);
 
-        // מעבר למסך הבית
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomeScreen()),
         );
       } else {
-        print('❌ Registration failed: ${response.body}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Registration failed. Please try again."),
-          ),
-        );
+        // print("❌ Registration failed: ${response.body}");
+        // ScaffoldMessenger.of(
+        //   context,
+        // ).showSnackBar(const SnackBar(content: Text("Registration failed.")));
+        print('❌ Server responded with error: ${response.statusCode}');
+        print('🪵 ${response.body}');
       }
-    } catch (error) {
-      print("❌ Error registering user: $error");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("An error occurred. Please try again.")),
-      );
+    } catch (e) {
+      print("❌ Error: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("An error occurred.")));
     }
   }
 
-  /// בניית שדות ייחודיים לפי תפקיד (מטופל או מטפל)
+  Widget _buildPatientFields() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 10),
+        const Text('Patients:', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        ..._patientFields.asMap().entries.map((entry) {
+          int index = entry.key;
+          PatientField field = entry.value;
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: field.controller,
+                    decoration: InputDecoration(
+                      labelText: 'Patient Email ${index + 1}',
+                      border: const OutlineInputBorder(),
+                      suffixIcon:
+                          field.isValid == true
+                              ? const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              )
+                              : field.isValid == false
+                              ? const Icon(Icons.error, color: Colors.red)
+                              : null,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  tooltip: 'Check if patient exists',
+                  onPressed: () => _validatePatient(index),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.remove_circle, color: Colors.red),
+                  onPressed: () {
+                    setState(() {
+                      _patientFields.removeAt(index);
+                    });
+                  },
+                ),
+              ],
+            ),
+          );
+        }),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text('Add Patient'),
+            onPressed: _addPatientField,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildAdditionalFields() {
     if (widget.role == 'caregiver') {
-      return TextFormField(
-        controller: _relationController,
-        validator:
-            (value) =>
-                value == null || value.isEmpty ? 'Relation is required' : null,
-        decoration: const InputDecoration(
-          labelText: 'Relation to Patient',
-          border: OutlineInputBorder(),
-        ),
-      );
+      return _buildPatientFields();
     } else if (widget.role == 'patient') {
       return TextFormField(
-        controller: _ageController,
+        controller: _birthYearController,
         keyboardType: TextInputType.number,
         validator:
-            (value) =>
-                value == null || value.isEmpty
-                    ? 'Birth year is required'
-                    : null,
+            (val) => val == null || val.isEmpty ? "Birth year required" : null,
         decoration: const InputDecoration(
           labelText: 'Year of Birth',
           border: OutlineInputBorder(),
         ),
       );
     }
-    return Container(); // אם אין תפקיד מוגדר
+    return const SizedBox.shrink();
   }
 
   @override
@@ -118,81 +235,90 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Register')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _nameController,
-                  validator:
-                      (value) =>
-                          value == null || value.isEmpty
-                              ? 'Name is required'
-                              : null,
-                  decoration: const InputDecoration(
-                    labelText: 'Name',
-                    border: OutlineInputBorder(),
-                  ),
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _nameController,
+                validator:
+                    (val) =>
+                        val == null || val.isEmpty ? "Name required" : null,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _emailController,
-                  validator:
-                      (value) =>
-                          value == null || !value.contains('@')
-                              ? 'Valid email required'
-                              : null,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                  ),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _emailController,
+                validator:
+                    (val) =>
+                        val == null || !val.contains('@')
+                            ? "Valid email required"
+                            : null,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  validator:
-                      (value) =>
-                          value == null || value.length < 6
-                              ? 'Password must be at least 6 characters'
-                              : null,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
-                  ),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: true,
+                validator:
+                    (val) =>
+                        val == null || val.length < 6
+                            ? "Min 6 characters"
+                            : null,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: true,
-                  validator:
-                      (value) =>
-                          value != _passwordController.text
-                              ? 'Passwords do not match'
-                              : null,
-                  decoration: const InputDecoration(
-                    labelText: 'Confirm Password',
-                    border: OutlineInputBorder(),
-                  ),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _confirmPasswordController,
+                obscureText: true,
+                validator:
+                    (val) =>
+                        val != _passwordController.text
+                            ? "Passwords do not match"
+                            : null,
+                decoration: const InputDecoration(
+                  labelText: 'Confirm Password',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 10),
-                _buildAdditionalFields(),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      await registerUser();
-                    }
-                  },
-                  child: const Text('Register'),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 10),
+              _buildAdditionalFields(),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _registerUser();
+                  }
+                },
+                child: const Text('Register'),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _birthYearController.dispose();
+    for (var field in _patientFields) {
+      field.controller.dispose();
+    }
+    super.dispose();
   }
 }

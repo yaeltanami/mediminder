@@ -5,19 +5,21 @@ const caregiverService = require('../services/caregiverService');
  */
 const registerCaregiver = async (req, res) => {
     try {
-        const { name, email, password, patients, relation } = req.body;
-
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
-
-        const { user, caregiver, token } = await caregiverService.registerCaregiver({ name, email, password, patients, relation });
-        res.status(201).json({ user, caregiver, token });
-
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+      const { name, email, password, patientsEmails } = req.body;
+  
+      const data = await caregiverService.registerCaregiver({
+        name,
+        email,
+        password,
+        patientsEmails,
+      });
+  
+      res.status(201).json(data);
+    } catch (err) {
+      console.error('❌ Error in registerCaregiver controller:', err);
+      res.status(500).json({ error: 'Server error' });
     }
-};
+  };
 /**
  * בקר להוספת מטופל למטפל
  */

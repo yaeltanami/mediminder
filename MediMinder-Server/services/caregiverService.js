@@ -2,35 +2,74 @@ const Caregiver = require('../models/caregiverModel');
 const userService = require('./userService');
 const Patient = require('../models/patientModel');
 const admin = require('../config/firebase');
+const User = require('../models/userModel');
 
 
 /**
  * יצירת מטפל (`Caregiver`) עם `User`
  */
-const registerCaregiver = async ({ name, email, password, patients, relation }) => {
-    // יצירת משתמש עם role קבוע ל'caregiver'
-    const user = await userService.registerUser({ name, email, password, role: 'caregiver' });
-
-    // יצירת מטפל חדש עם פרטי המשתמש
-    const caregiver = await Caregiver.create({
-        userId: user._id,
-        patients: patients || [],
-        relation: relation
-    });
-
-    // קישור המטופלים למטפל
-    if (patients && patients.length > 0) {
-        await Patient.updateMany(
-            { _id: { $in: patients } },
-            { $push: { caregivers: caregiver._id } }
-        );
+const registerCaregiver = async ({ name, email, password, patientsEmails }) => {
+    const patientIds = [];
+  
+    // 1. בדיקת המטופלים לפני כל דבר אחר
+    for (const email of patientsEmails) {
+      const patientUser = await User.findOne({ email, role: 'patient' });
+      if (!patientUser) {
+        console.log(`⚠️ Patient user not found for email: ${email}`);
+        continue;
+      }
+  
+      const patient = await Patient.findOne({ userId: patientUser._id });
+      if (!patient) {
+        console.log(`⚠️ Patient record not found for userId: ${patientUser._id}`);
+        continue;
+      }
+  
+      patientIds.push(patient.us);
     }
-
-    // יצירת טוקן
+  
+    // 2. יצירת משתמש מסוג caregiver
+    const user = await userService.registerUser({
+      name,
+      email,
+      password,
+      role: 'caregiver',
+    });
+    
+    // 3. יצירת caregiver ושמירה
+    let caregiver;
+    try {
+      caregiver = new Caregiver({
+        userId: user._id,
+        patients: patientIds,
+      });
+  
+      await caregiver.save();
+      console.log('✅ Caregiver saved:', caregiver._id);
+    } catch (err) {
+      console.error('❌ Failed to save caregiver:', err.message);
+  
+      // 🧹 אם נכשלת, ננקה את המשתמש שיצרנו
+      await User.findByIdAndDelete(user._id);
+      throw new Error('Failed to create caregiver – user was deleted');
+    }
+  
+    // 4. קשר דו-כיווני למטופלים
+    for (const patientId of patientIds) {
+      const patient = await Patient.findById(patientId);
+      if (!patient) continue;
+  
+      if (!patient.caregivers.includes(user._id)) {
+        patient.caregivers.push(user._id);
+        await patient.save();
+      }
+    }
+  
+    // 5. יצירת טוקן
     const token = userService.generateToken(user._id, user.role);
-
+  
     return { user, caregiver, token };
-};
+  };
 
 
 /**

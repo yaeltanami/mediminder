@@ -108,5 +108,17 @@ const getCaregiversForPatient = async (patientId) => {
     }
 };
 
+const getPatientByEmail = async (email) => {
+  if (!email) throw new Error('Email is required');
 
-module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient};
+  const user = await User.findOne({ email, role: 'patient' });
+  if (!user) throw new Error('Patient not found');
+
+  const patient = await Patient.findOne({ userId: user._id });
+  if (!patient) throw new Error('Patient data not found');
+
+  return patient;
+};
+
+
+module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient, getPatientByEmail};
