@@ -93,15 +93,15 @@ const sendPatientReminder = async (userId, medicationId) => {
  */
 const getCaregiversForPatient = async (patientId) => {
     try {
-        // חיפוש המטופל ושליפת כל המטפלים שלו, אך מחזירים רק את ה-ID
-        const patient = await Patient.findById(patientId).populate('caregivers', '_id');
+        // חיפוש המטופל ושליפת כל המטפלים שלה-ID
+        const patient = await Patient.findById(patientId).populate('caregivers');
 
         if (!patient) {
             throw new Error("Patient not found.");
         }
 
-        // מחזירים רק מערך של מזהי המטפלים
-        return patient.caregivers.map(caregiver => caregiver._id);
+        // מחזירים  מערך של המטפלים
+        return patient.caregivers
     } catch (error) {
         console.error("❌ Error retrieving caregivers for patient:", error);
         throw error;

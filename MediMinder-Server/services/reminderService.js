@@ -14,7 +14,6 @@ const sendMedicationReminders = async () => {
         const currentHourMinute = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}`;
         const currentDay = currentTime.toLocaleDateString('en-US', { weekday: 'long' }); 
 
-
         console.log(`🔎 Checking for medication reminders at: ${currentHourMinute} and ${currentDay}`);
 
         // Find all medications that should be taken at this time
@@ -28,20 +27,14 @@ const sendMedicationReminders = async () => {
              return;
         }
         for (const medication of medications) { 
-            const user = await User.findById(medication.patientId);
-            if (!user) {
-                console.warn(`⚠️ No user found for medication.patientId = ${medication.patientId}`);
-                continue;
-              }
-
-            const patient = await Patient.findOne({ userId: user._id });
+            const patient = await Patient.findOne({ userId: medication.patientId });
             if (!patient) {
-                console.warn(`⚠️ No patient found for user ${user._id}`);
+                console.warn(`⚠️ No patient found for user ${patient.userId}`);
                 continue;
               }
             
-            console.log(`🔔 Sending reminder to patient ${user.name} for medication: ${medication.name}`);
-            await patientService.sendPatientReminder(user._id, medication._id);  
+            console.log(`🔔 Sending reminder to patient ${patient.userId} for medication: ${medication.name}`);
+            await patientService.sendPatientReminder(patient.userId, medication._id);  
 
             // שליחת תזכורות לכל המטפלים
             const caregivers = await patientService.getCaregiversForPatient(patient._id);
@@ -50,7 +43,7 @@ const sendMedicationReminders = async () => {
                 caregivers.map(caregiver =>
                   caregiverService.sendCaregiverReminder(
                     caregiver,
-                    user._id,
+                    patient.userId,
                     medication
                   )
                 )

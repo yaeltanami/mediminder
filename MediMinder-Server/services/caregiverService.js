@@ -25,7 +25,7 @@ const registerCaregiver = async ({ name, email, password, patientsEmails }) => {
         continue;
       }
   
-      patientIds.push(patient.us);
+      patientIds.push(patient.userId);
     }
   
     // 2. יצירת משתמש מסוג caregiver
@@ -56,11 +56,11 @@ const registerCaregiver = async ({ name, email, password, patientsEmails }) => {
   
     // 4. קשר דו-כיווני למטופלים
     for (const patientId of patientIds) {
-      const patient = await Patient.findById(patientId);
+      const patient = await Patient.findOne({ userId: patientId});
       if (!patient) continue;
   
-      if (!patient.caregivers.includes(user._id)) {
-        patient.caregivers.push(user._id);
+      if (!patient.caregivers.includes(caregiver._id)) {
+        patient.caregivers.push(caregiver._id);
         await patient.save();
       }
     }
@@ -170,16 +170,13 @@ const getPatientsForCaregiver = async (caregiverId) => {
 
 
 const sendCaregiverReminder = async (caregiver, patientUserId, medication) => {
-    
     try {
       const caregiverUser = await User.findById(caregiver.userId);
       if (!caregiverUser || !caregiverUser.fcmToken) {
         console.warn(`⚠️ Caregiver ${caregiverId} has no FCM token`);
         return;
       }
-  
-      // שליחת ההתראה
-      const message = {
+        const message = {
         token: caregiverUser.fcmToken,
         notification: {
           title: 'המטופל שלך צריך לקחת תרופה',
