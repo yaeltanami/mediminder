@@ -76,7 +76,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             listen: false,
           ).setToken(data['patient']);
         }
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomeScreen()),
