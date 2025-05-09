@@ -1,10 +1,9 @@
+
 import 'package:flutter/material.dart';
 
-/// ווידג'ט להצגת שורת ימים לבחירה (Sunday–Saturday)
-/// מאפשר למשתמש לבחור יום, ומעדכן את המצב במסך ההורה (למשל HomeScreen)
 class WeekdaySelector extends StatelessWidget {
-  final String selectedDay; // היום שנבחר כרגע (מהמסך הראשי)
-  final Function(String) onDaySelected; // פונקציה שמתבצעת כשנלחץ יום אחר
+  final String selectedDay;
+  final Function(String) onDaySelected;
 
   const WeekdaySelector({
     super.key,
@@ -12,56 +11,53 @@ class WeekdaySelector extends StatelessWidget {
     required this.onDaySelected,
   });
 
-  // רשימת כל הימים בשבוע לפי סדר
   static const List<String> _days = [
     'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
   ];
 
-  // החזרת קיצור ליום – לדוגמה 'MON' במקום 'Monday'
   String _getLabel(String day) {
-    switch (day) {
-      case 'Sunday': return 'SUN';
-      case 'Monday': return 'MON';
-      case 'Tuesday': return 'TUE';
-      case 'Wednesday': return 'WED';
-      case 'Thursday': return 'THU';
-      case 'Friday': return 'FRI';
-      case 'Saturday': return 'SAT';
-      default: return '';
-    }
+    return day.substring(0, 3).toUpperCase();
   }
 
-  // החזרת מספר סידורי ליום (Sunday = 1, Monday = 2, ...)
   String _getNumber(String day) {
     return (_days.indexOf(day) + 1).toString();
   }
 
   @override
   Widget build(BuildContext context) {
+    final Color mainColor = const Color.fromARGB(255, 32, 134, 134);
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: _days.map((day) {
-          final bool isSelected = day == selectedDay; // בודק אם זה היום הנבחר
+          final bool isSelected = day == selectedDay;
           return GestureDetector(
-            onTap: () => onDaySelected(day), // כשנלחץ – מפעיל את הפונקציה מהמסך ההורה
+            onTap: () => onDaySelected(day),
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 6),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                border: isSelected ? Border.all(color: Colors.blue, width: 2) : null,
+                color: isSelected ? mainColor.withOpacity(0.2) : Colors.white,
+                border: isSelected ? Border.all(color: mainColor, width: 2) : null,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: [
                   Text(
-                    _getNumber(day), // מספר סידורי של היום
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    _getNumber(day),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? mainColor : Colors.black87,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _getLabel(day), // קיצור של היום
-                    style: const TextStyle(fontSize: 12),
+                    _getLabel(day),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isSelected ? mainColor : Colors.black54,
+                    ),
                   ),
                 ],
               ),
