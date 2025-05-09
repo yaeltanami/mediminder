@@ -19,7 +19,7 @@ const registerPatient = async (req, res) => {
         res.status(201).json({ user, patient, token });
 
     } catch (error) {
-                console.log("do not work");
+                console.log("do not work4");
 
         res.status(400).json({ message: error.message });
     }
