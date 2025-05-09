@@ -209,7 +209,7 @@ function isTimeMatching(currentHour, currentMinute, medicationTime) {
     return medHour === currentHour && medMinute === currentMinute;
   }
   
-  const getDueMedicationsStates = async (patientId) => {
+const getDueMedicationsStates = async (patientId) => {
     const patient = await Patient.findById(patientId).populate('medications');
     const now = new Date();
     const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }); // למשל "Sunday"
@@ -238,6 +238,6 @@ module.exports = {
     deleteMedication,
     updateMedication,
     getMedicationById,
-    markAsTaken
+    markAsTaken,
     getDueMedicationsStates,
 };
