@@ -44,7 +44,7 @@ class _MedicationsManagementScreenState extends State<MedicationsManagementScree
 
   Future<void> fetchMedications() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final patientId = authProvider.user?['_id'];
+    final patientId = authProvider.role?['_id'];
     final token = authProvider.token;
 
     if (patientId == null || token == null) return;

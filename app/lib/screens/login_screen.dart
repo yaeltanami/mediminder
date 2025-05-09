@@ -50,6 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         authProvider.setUser(data['user']); // שמירת פרטי המשתמש
         authProvider.setToken(data['token']); // שמירת הטוקן
+        
         await sendFcmToken(data['token']);//שליחת הטוקן לשרת
         Navigator.pushReplacement(
           context,

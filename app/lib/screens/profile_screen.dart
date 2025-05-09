@@ -12,10 +12,12 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final mainColor = const Color(0xFF208686);
     final user = Provider.of<AuthProvider>(context).user;
+    final role = Provider.of<AuthProvider>(context).role;
+
 
     final name = user?['name'] ?? 'N/A';
     final email = user?['email'] ?? 'N/A';
-    final age = user?['age']?.toString() ?? 'N/A';
+    final age = role?['age']?.toString() ?? 'N/A';
 
     return Scaffold(
       backgroundColor: const Color(0xFFCEECF5),

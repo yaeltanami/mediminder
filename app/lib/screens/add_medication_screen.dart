@@ -20,8 +20,13 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   final List<Map<String, dynamic>> _times = [];
 
   final Map<String, bool> _days = {
-    'Sunday': false, 'Monday': false, 'Tuesday': false,
-    'Wednesday': false, 'Thursday': false, 'Friday': false, 'Saturday': false,
+    'Sunday': false,
+    'Monday': false,
+    'Tuesday': false,
+    'Wednesday': false,
+    'Thursday': false,
+    'Friday': false,
+    'Saturday': false,
   };
 
   String? _daysError;
@@ -45,7 +50,10 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final selectedDays =
-        _days.entries.where((entry) => entry.value).map((entry) => entry.key).toList();
+        _days.entries
+            .where((entry) => entry.value)
+            .map((entry) => entry.key)
+            .toList();
 
     if (selectedDays.isEmpty) {
       setState(() {
@@ -56,7 +64,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final String? token = authProvider.token;
-    final String? patientId = authProvider.user?['_id'];
+    // final String? userId = authProvider.user?['_id'];
+
+    final String? patientId = authProvider.role?['_id'];
 
     if (patientId == null || token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -65,13 +75,19 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       return;
     }
 
-    final List<Map<String, dynamic>> formattedTimes = _times
-        .where((entry) => entry['time'].isNotEmpty && entry['pillsCount'].isNotEmpty)
-        .map((entry) => {
-              'time': entry['time'],
-              'pillsCount': int.parse(entry['pillsCount'])
-            })
-        .toList();
+    final List<Map<String, dynamic>> formattedTimes =
+        _times
+            .where(
+              (entry) =>
+                  entry['time'].isNotEmpty && entry['pillsCount'].isNotEmpty,
+            )
+            .map(
+              (entry) => {
+                'time': entry['time'],
+                'pillsCount': int.parse(entry['pillsCount']),
+              },
+            )
+            .toList();
 
     if (formattedTimes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -85,7 +101,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       'name': _nameController.text,
       'dose': _doseController.text,
       'times': formattedTimes,
-      'days': selectedDays
+      'days': selectedDays,
     };
 
     try {
@@ -93,7 +109,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         Uri.parse('${Config.baseUrl}/medications/add'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token'
+          'Authorization': 'Bearer $token',
         },
         body: jsonEncode(medicationData),
       );
@@ -108,9 +124,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         );
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $error')));
     }
   }
 
@@ -120,7 +136,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Text(
             "Medication Added",
             style: TextStyle(
@@ -138,7 +156,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Medication added successfully!')),
+                  const SnackBar(
+                    content: Text('Medication added successfully!'),
+                  ),
                 );
                 Navigator.of(context).pop();
               },
@@ -160,12 +180,19 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Add Medication', style: TextStyle(color: Color(0xFF208686))),
+        title: const Text(
+          'Add Medication',
+          style: TextStyle(color: Color(0xFF208686)),
+        ),
         iconTheme: const IconThemeData(color: Color(0xFF208686)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: Image.asset('assets/images/welcome.png', width: 40, height: 40),
+            child: Image.asset(
+              'assets/images/welcome.png',
+              width: 40,
+              height: 40,
+            ),
           ),
         ],
       ),
@@ -176,41 +203,49 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField(_nameController, 'Medication Name', 'Enter medication name'),
+              _buildTextField(
+                _nameController,
+                'Medication Name',
+                'Enter medication name',
+              ),
               const SizedBox(height: 16),
               _buildTextField(_doseController, 'Dose', 'e.g. 500mg'),
               const SizedBox(height: 24),
-              const Text('Times of the day', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text(
+                'Times of the day',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Column(
-                children: _times.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: _buildTimeField(
-                          _times[index]['time'],
-                          (value) => _times[index]['time'] = value,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _buildNumberField(
-                          _times[index]['pillsCount'],
-                          (value) => _times[index]['pillsCount'] = value,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          setState(() {
-                            _times.removeAt(index);
-                          });
-                        },
-                      ),
-                    ],
-                  );
-                }).toList(),
+                children:
+                    _times.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: _buildTimeField(
+                              _times[index]['time'],
+                              (value) => _times[index]['time'] = value,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _buildNumberField(
+                              _times[index]['pillsCount'],
+                              (value) => _times[index]['pillsCount'] = value,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              setState(() {
+                                _times.removeAt(index);
+                              });
+                            },
+                          ),
+                        ],
+                      );
+                    }).toList(),
               ),
               const SizedBox(height: 10),
               ElevatedButton.icon(
@@ -220,35 +255,45 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                 ),
                 onPressed: _addTimeField,
                 icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text('Add Time', style: TextStyle(color: Colors.white)),
+                label: const Text(
+                  'Add Time',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Days of the week', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Days of the week',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                   TextButton(
                     onPressed: () {
                       setState(() {
                         _days.updateAll((key, value) => true);
                       });
                     },
-                    child: const Text('Select All', style: TextStyle(color: Color(0xFF208686))),
+                    child: const Text(
+                      'Select All',
+                      style: TextStyle(color: Color(0xFF208686)),
+                    ),
                   ),
                 ],
               ),
               Column(
-                children: _days.keys.map((day) {
-                  return CheckboxListTile(
-                    title: Text(day),
-                    value: _days[day],
-                    onChanged: (value) {
-                      setState(() {
-                        _days[day] = value ?? false;
-                      });
-                    },
-                  );
-                }).toList(),
+                children:
+                    _days.keys.map((day) {
+                      return CheckboxListTile(
+                        title: Text(day),
+                        value: _days[day],
+                        onChanged: (value) {
+                          setState(() {
+                            _days[day] = value ?? false;
+                          });
+                        },
+                      );
+                    }).toList(),
               ),
               if (_daysError != null)
                 Padding(
@@ -263,10 +308,15 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF208686),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
                   onPressed: _submitForm,
-                  child: const Text('Save Medication', style: TextStyle(color: Colors.white)),
+                  child: const Text(
+                    'Save Medication',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],
@@ -276,11 +326,21 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, String hint) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    String hint,
+  ) {
     return TextFormField(
       controller: controller,
-      decoration: InputDecoration(labelText: label, hintText: hint, border: const OutlineInputBorder()),
-      validator: (value) => value == null || value.isEmpty ? 'Please enter $label' : null,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        border: const OutlineInputBorder(),
+      ),
+      validator:
+          (value) =>
+              value == null || value.isEmpty ? 'Please enter $label' : null,
     );
   }
 
@@ -288,9 +348,13 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     return TextFormField(
       initialValue: initialValue,
       keyboardType: TextInputType.datetime,
-      decoration: const InputDecoration(labelText: 'Time (HH:MM)', border: OutlineInputBorder()),
+      decoration: const InputDecoration(
+        labelText: 'Time (HH:MM)',
+        border: OutlineInputBorder(),
+      ),
       validator: (value) {
-        if (value == null || !RegExp(r'^(?:[01]?[0-9]|2[0-3]):[0-5][0-9]$').hasMatch(value)) {
+        if (value == null ||
+            !RegExp(r'^(?:[01]?[0-9]|2[0-3]):[0-5][0-9]$').hasMatch(value)) {
           return 'Enter a valid time';
         }
         return null;
@@ -303,7 +367,10 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     return TextFormField(
       initialValue: initialValue,
       keyboardType: TextInputType.number,
-      decoration: const InputDecoration(labelText: 'Pills', border: OutlineInputBorder()),
+      decoration: const InputDecoration(
+        labelText: 'Pills',
+        border: OutlineInputBorder(),
+      ),
       validator: (value) {
         if (value == null || value.isEmpty) return 'Required';
         final intVal = int.tryParse(value);
