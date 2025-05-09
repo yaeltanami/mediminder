@@ -17,7 +17,6 @@ const admin = require('../config/firebase'); // או הנתיב המתאים
  */
 const addMedication = async (patientId, name, dose, times, days) => {
     try {
-
         // יצירת התרופה ושמירתה במסד הנתונים
         let newMedication = new Medication({ patientId, name, dose, times, days });
         let savedMedication = await newMedication.save();
@@ -28,7 +27,7 @@ const addMedication = async (patientId, name, dose, times, days) => {
         console.log(`patient id:${patientId} patient name ${name}`)
 
         // שיבוץ התרופה לתא פנוי בקופסה
-        const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientObjectId, savedMedication._id);
+        const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, savedMedication._id);
 
                 // ✅ עדכון התרופה עם מספר התא שנבחר בקופסה
                 savedMedication.slotNumber = slotNumber;
