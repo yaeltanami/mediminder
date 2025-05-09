@@ -16,15 +16,7 @@ const admin = require('../config/firebase'); // או הנתיב המתאים
  * @returns {Promise<object>} - מחזיר את התרופה החדשה ואת ההודעה למשתמש
  */
 const addMedication = async (patientId, name, dose, times, days) => {
-    console.log("userId: ", userId)
     try {
-         // 🔎 מציאת המטופל לפי userId 
-        const patient = await Patient.findOne({ userId: userId });
-          if (!patient) {
-             throw new Error("❌ Patient not found.");
-        }
-       
-       const patientId = patient._id; // זהו ה-_id שהמונגו יצר
         // יצירת התרופה ושמירתה במסד הנתונים
         let newMedication = new Medication({ patientId, name, dose, times, days });
         let savedMedication = await newMedication.save();
@@ -210,7 +202,7 @@ function isTimeMatching(currentHour, currentMinute, medicationTime) {
     return medHour === currentHour && medMinute === currentMinute;
   }
   
-  const getDueMedicationsStates = async (patientId) => {
+const getDueMedicationsStates = async (patientId) => {
     const patient = await Patient.findById(patientId).populate('medications');
     const now = new Date();
     const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }); // למשל "Sunday"

@@ -11,6 +11,8 @@ import '../providers/auth_provider.dart';
 import 'home_screen.dart';
 import '../config.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'welcome_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -50,7 +52,12 @@ class _LoginScreenState extends State<LoginScreen> {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         authProvider.setUser(data['user']); // שמירת פרטי המשתמש
         authProvider.setToken(data['token']); // שמירת הטוקן
-        await sendFcmToken(data['token']);//שליחת הטוקן לשרת
+        try {
+  await sendFcmToken(data['token']);
+} catch (e) {
+  print('🚨 שגיאה בשליחת FCM Token: $e');
+}
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -70,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
 Future<void> sendFcmToken(String jwt) async {
   final fcmToken = await FirebaseMessaging.instance.getToken();
 
-  print('🔄 מנסה לשלוח את ה-FCM Token לאחר התחברות: $fcmToken');
+  print('lllllllll $fcmToken');
 
   if (fcmToken == null) {
     print('⚠️ FCM Token is null');
@@ -113,11 +120,22 @@ Future<void> sendFcmToken(String jwt) async {
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 206, 236, 245),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: BackButton(color: mainColor),    
-      ),
+appBar: AppBar(
+  backgroundColor: Colors.transparent,
+  elevation: 0,
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back),
+    color: Color.fromARGB(255, 32, 134, 134),
+    onPressed: () {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => WelcomeScreen()),
+        (route) => false,
+      );
+    },
+  ),
+
+),
+
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Align(

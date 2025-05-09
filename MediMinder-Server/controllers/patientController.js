@@ -13,11 +13,14 @@ const registerPatient = async (req, res) => {
         if (!name || !email || !password || !birthDate) {
             return res.status(400).json({ message: 'All fields are required' });
         }
+        console.log("all fiels good");
 
         const { user, patient, token } = await patientService.registerPatient({ name, email, password, birthDate, caregivers });
         res.status(201).json({ user, patient, token });
 
     } catch (error) {
+                console.log("do not work4");
+
         res.status(400).json({ message: error.message });
     }
 };
