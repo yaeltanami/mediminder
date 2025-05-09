@@ -16,7 +16,12 @@ const sendMedicationReminders = async () => {
         console.log(`🔎 Checking for medication reminders at: ${currentHourMinute}`);
 
         // Find all medications that should be taken at this time
-        const medications = await Medication.find({ times: currentHourMinute });
+        // const medications = await Medication.find({ times: currentHourMinute });
+        const medications = await Medication.find({ "times.time": currentTime });
+        if (!medications || !Array.isArray(medications)) {
+             console.log("⏩ No valid medications found for this time, skipping reminders.");
+             return;
+        }
 
         for (const medication of medications) {
             const patient = await Patient.findById(medication.patientId);

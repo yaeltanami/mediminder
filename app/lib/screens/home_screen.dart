@@ -1,147 +1,199 @@
 import 'package:flutter/material.dart';
-import 'add_medication_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+import '../providers/auth_provider.dart';
+import '../config.dart';
+import '../widgets/weekday_selector.dart';
+import '../widgets/medication_card.dart';
+import 'profile_screen.dart';
 
-class HomeScreen extends StatelessWidget {
-  final String username;
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
-  const HomeScreen({super.key, required this.username});
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String selectedDay = DateTime.now().weekday == 7
+      ? 'Sunday'
+      : [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday'
+        ][DateTime.now().weekday - 1];
+
+  List<dynamic> medications = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMedicationsForDay();
+  }
+
+  Future<void> fetchMedicationsForDay() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final patientId = authProvider.user?['_id'];
+    final token = authProvider.token;
+
+    if (patientId == null || token == null) return;
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+            '${Config.baseUrl}/medications/patient/$patientId/day/$selectedDay'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          medications = jsonDecode(response.body);
+        });
+      } else {
+        print('❌ Failed to load medications');
+      }
+    } catch (e) {
+      print('❌ Error fetching medications: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final username = authProvider.user?['name'] ?? "Guest";
+    final Color mainColor = const Color.fromARGB(255, 32, 134, 134);
+
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AddMedicationScreen()),
-    );
-        },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
-      ),
+      backgroundColor: const Color.fromARGB(255, 206, 236, 245),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Text(
-                  'Welcome, $username',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+              // שורת פתיחה עם טקסט, אייקון ו־לוגו
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Welcome, $username',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: mainColor,
+                    ),
                   ),
-                ),
-              ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.person, color: Color(0xFF208686)),
+onPressed: () async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+  );
+  fetchMedicationsForDay(); // ירענן את התרופות כשחוזרים
+},
 
-              const SizedBox(height: 32),
-
-              const Center(
-                child: Text(
-                  'Today',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // שורת ימים עם גלילה
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _dayItem("2", "FRI"),
-                    _dayItem("3", "SAT"),
-                    _dayItem("4", "SUN"),
-                    _dayItem("5", "MON"),
-                    _dayItem("6", "TUE"),
-                    _dayItem("7", "WED", isSelected: true),
-                    _dayItem("8", "THU"),
-                    _dayItem("9", "FRI"),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              const Text(
-                'Time to take medications',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // עיגול עם מידע על תרופות
-              Container(
-                width: 150,
-                height: 150,
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(Icons.medication, size: 30, color: Colors.orange),
-                      SizedBox(height: 8),
-                      Text(
-                        '0/2',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Tuesday',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
+                      const SizedBox(width: 8),
+                      Image.asset(
+                        'assets/images/welcome.png',
+                        width: 50,
+                        height: 50,
                       ),
                     ],
                   ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              Center(
+                child: Text(
+                  selectedDay,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+              ),
+              const SizedBox(height: 16),
+
+              WeekdaySelector(
+                selectedDay: selectedDay,
+                onDaySelected: (day) {
+                  setState(() {
+                    selectedDay = day;
+                  });
+                  fetchMedicationsForDay();
+                },
+              ),
+              const SizedBox(height: 32),
+
+              Center(
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: mainColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.medication,
+                            size: 30, color: Colors.orange),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${medications.length}/?',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: mainColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          selectedDay,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              const Text(
+                'Medications for selected day:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+
+              Expanded(
+                child: medications.isEmpty
+                    ? const Text("No medications for this day.")
+                    : ListView.builder(
+                        itemCount: medications.length,
+                        itemBuilder: (context, index) {
+                          return MedicationCard(
+                              medication: medications[index]);
+                        },
+                      ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // וידג'ט קטן ליום בלוח השבוע
-  Widget _dayItem(String day, String label, {bool isSelected = false}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 6),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: isSelected ? Border.all(color: Colors.blue, width: 2) : null,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Text(
-            day,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 12),
-          ),
-        ],
       ),
     );
   }

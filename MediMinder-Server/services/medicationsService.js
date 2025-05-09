@@ -10,20 +10,30 @@ const pillBoxService = require('../services/pillBoxService');
  * @param {string} patientId - מזהה המטופל
  * @param {string} name - שם התרופה
  * @param {string} dose - מינון
- * @param {array} times - שעות הנטילה
+ * @param {array} times - מערך המכיל שעות נטילה ומספר כדורים לכל שעה
+ *                        לדוגמה: [{time: "08:00", pillsCount: 2}, {time: "20:00", pillsCount: 1}]
  * @returns {Promise<object>} - מחזיר את התרופה החדשה ואת ההודעה למשתמש
  */
-const addMedication = async (patientId, name, dose, times) => {
+const addMedication = async (userId, name, dose, times, days) => {
     try {
+         // 🔎 מציאת המטופל לפי userId 
+        const patient = await Patient.findOne({ userId: userId });
+          if (!patient) {
+             throw new Error("❌ Patient not found.");
+        }
+       
+       const patientObjectId = patient._id; // זהו ה-_id שהמונגו יצר
         // יצירת התרופה ושמירתה במסד הנתונים
-        let newMedication = new Medication({ patientId, name, dose, times });
+        let newMedication = new Medication({ patientId, name, dose, times, days });
         let savedMedication = await newMedication.save();
 
         // הוספת התרופה לרשימת התרופות של המטופל
         await Patient.findByIdAndUpdate(patientId, { $push: { medications: savedMedication._id } });
 
+        console.log(`patient id:${patientId} patient name ${name}`)
+
         // שיבוץ התרופה לתא פנוי בקופסה
-        const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, savedMedication._id);
+        const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientObjectId, savedMedication._id);
 
                 // ✅ עדכון התרופה עם מספר התא שנבחר בקופסה
                 savedMedication.slotNumber = slotNumber;
@@ -109,7 +119,35 @@ const updateMedication = async (medicationId, updateData) => {
         // עדכון הנתונים רק אם התקבלו שדות רלוונטיים
         if (updateData.name) medication.name = updateData.name;
         if (updateData.dose) medication.dose = updateData.dose;
-        if (updateData.times) medication.times = updateData.times;
+        if (updateData.times) {
+            if (!Array.isArray(updateData.times)) {
+                throw new Error("Times must be an array of objects.");
+            }
+
+            updateData.times.forEach(entry => {
+                if (!entry.time || typeof entry.pillsCount !== 'number') {
+                    throw new Error("Each entry in 'times' must have a 'time' and a numeric 'pillsCount'.");
+                }
+            });
+
+            medication.times = updateData.times;
+        }
+                // עדכון הימים אם התקבלו
+        if (updateData.days) {
+            const validDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                    
+            if (!Array.isArray(updateData.days)) {
+                throw new Error("Days must be an array of strings.");
+            }
+        
+             updateData.days.forEach(day => {
+                 if (!validDays.includes(day)) {
+                    throw new Error(`Invalid day provided: ${day}`);
+                }
+            });
+        
+            medication.days = updateData.days;
+        }
 
         // שמירת השינויים במסד הנתונים
         const updatedMedication = await medication.save();
