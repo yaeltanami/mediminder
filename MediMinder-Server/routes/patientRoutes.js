@@ -7,5 +7,4 @@ router.post('/register', patientController.registerPatient);
 // קבלת כל המטפלים של מטופל מסוים
 router.get('/caregivers/:patientId', patientController.getCaregiversForPatient);
 
-
 module.exports = router;

@@ -7,6 +7,18 @@ import '../providers/auth_provider.dart';
 import '../config.dart';
 import '../widgets/weekday_selector.dart';
 import '../widgets/medication_card.dart';
+
+import 'message.dart';
+import 'welcome_screen.dart';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+/// מסך הבית הראשי של האפליקציה.
+///
+/// מציג למשתמש את שם המשתמש המחובר, מאפשר לבחור יום בשבוע,
+/// ומציג את כל התרופות שעליו לקחת באותו היום.
+/// בנוסף ניתן להוסיף תרופה חדשה דרך כפתור הפלוס.
+
 import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,23 +29,79 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String selectedDay = DateTime.now().weekday == 7
-      ? 'Sunday'
-      : [
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday'
-        ][DateTime.now().weekday - 1];
+  // הגדרת היום הנבחר כברירת מחדל (היום הנוכחי)
+  String selectedDay =
+      DateTime.now().weekday == 7
+          ? 'Sunday'
+          : [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+          ][DateTime.now().weekday - 1];
 
-  List<dynamic> medications = [];
+  List<dynamic> medications = []; // רשימת התרופות שנשלפות מהשרת
 
+  @override
   @override
   void initState() {
     super.initState();
+    // טעינת תרופות
     fetchMedicationsForDay();
+
+    // מאזין להתראות מהשרת כשהאפליקציה פתוחה
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('📲 FCM message received!');
+
+      if (message.data.isNotEmpty) {
+        final action = message.data['action'];
+
+        if (action == 'medication_reminder') {
+          final userId = message.data['userId'];
+          final medicationId = message.data['medicationId'];
+          final medicationName = message.data['medicationName'];
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (_) => MessageScreen(
+                    userId: userId,
+                    medicationId: medicationId,
+                    medicationName: medicationName,
+                    isCaregiver: false, // מטופל
+                  ),
+            ),
+          );
+        } else if (action == 'caregiver_reminder') {
+          final patientUserId = message.data['patientUserId'];
+          final medicationId = message.data['medicationId'];
+          final medicationName = message.data['medicationName'];
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (_) => MessageScreen(
+                    userId: patientUserId,
+                    medicationId: medicationId,
+                    medicationName: medicationName,
+                    isCaregiver: true, // מטפל
+                  ),
+            ),
+          );
+        } else if (action == 'medication_taken') {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+            print('✅ Closed message screen: medication taken.');
+          }
+        } else {
+          print('⚠️ Unknown action received: $action');
+        }
+      }
+    });
   }
 
   Future<void> fetchMedicationsForDay() async {
@@ -62,12 +130,36 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> logoutUser(String jwt) async {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+
+    if (fcmToken == null) {
+      print('⚠️ No FCM token found');
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse('${Config.baseUrl}/users/remove-token'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $jwt',
+      },
+      body: jsonEncode({'fcmToken': fcmToken}),
+    );
+
+    if (response.statusCode == 200) {
+      print('✅ FCM token removed from server');
+    } else {
+      print('❌ Failed to remove FCM token: ${response.body}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+
     final username = authProvider.user?['name'] ?? "Guest";
     final Color mainColor = const Color.fromARGB(255, 32, 134, 134);
-
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 206, 236, 245),
       body: SafeArea(
@@ -148,6 +240,7 @@ onPressed: () async {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+
                         const Icon(Icons.medication,
                             size: 30, color: Colors.orange),
                         const SizedBox(height: 8),

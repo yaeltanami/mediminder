@@ -44,7 +44,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (widget.role == 'caregiver') {
       requestData['relation'] = _relationController.text;
     } else if (widget.role == 'patient') {
-      requestData['birthDate'] = '${_ageController.text}-01-01';
+      requestData['birthDate'] =
+          '${_ageController.text}-01-01'; // קלט שנת לידה בלבד
     }
 
     try {
@@ -65,7 +66,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Registration failed. Please try again.")),
+          const SnackBar(
+            content: Text("Registration failed. Please try again."),
+          ),
         );
       }
     } catch (error) {
@@ -80,7 +83,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (widget.role == 'caregiver') {
       return TextFormField(
         controller: _relationController,
-        validator: (value) => value == null || value.isEmpty ? 'Relation is required' : null,
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Relation is required' : null,
         decoration: const InputDecoration(
           labelText: 'Relation to Patient',
           border: OutlineInputBorder(),
@@ -90,7 +94,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return TextFormField(
         controller: _ageController,
         keyboardType: TextInputType.number,
-        validator: (value) => value == null || value.isEmpty ? 'Birth year is required' : null,
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Birth year is required' : null,
         decoration: const InputDecoration(
           labelText: 'Year of Birth',
           border: OutlineInputBorder(),
@@ -103,22 +108,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 206, 236, 245),
-  appBar: AppBar(
-  backgroundColor: Colors.transparent,
-  elevation: 0,
-  leading: BackButton(color: mainColor),
-  actions: [
-    Padding(
-      padding: const EdgeInsets.only(right: 12),
-      child: Image.asset(
-        'assets/images/welcome.png',
-        width: 40,
-        height: 40,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: BackButton(color: mainColor),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Image.asset(
+              'assets/images/welcome.png',
+              width: 40,
+              height: 40,
+            ),
+          ),
+        ],
       ),
-    ),
-  ],
-),
-
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Form(
@@ -129,7 +133,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 40), // רווח מהחלק העליון
                 TextFormField(
                   controller: _nameController,
-                  validator: (value) => value == null || value.isEmpty ? 'Name is required' : null,
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Name is required' : null,
                   decoration: const InputDecoration(
                     labelText: 'Name',
                     border: OutlineInputBorder(),
@@ -138,7 +143,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _emailController,
-                  validator: (value) => value == null || !value.contains('@') ? 'Valid email required' : null,
+                  validator: (value) =>
+                      value == null || !value.contains('@') ? 'Valid email required' : null,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
@@ -148,7 +154,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  validator: (value) => value == null || value.length < 6 ? 'Password must be at least 6 characters' : null,
+                  validator: (value) =>
+                      value == null || value.length < 6 ? 'Password must be at least 6 characters' : null,
                   decoration: const InputDecoration(
                     labelText: 'Password',
                     border: OutlineInputBorder(),
@@ -158,7 +165,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: true,
-                  validator: (value) => value != _passwordController.text ? 'Passwords do not match' : null,
+                  validator: (value) =>
+                      value != _passwordController.text ? 'Passwords do not match' : null,
                   decoration: const InputDecoration(
                     labelText: 'Confirm Password',
                     border: OutlineInputBorder(),
@@ -167,8 +175,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 10),
                 _buildAdditionalFields(),
                 const SizedBox(height: 30),
-
-                // כפתור רישום
                 SizedBox(
                   width: double.infinity,
                   height: 50,
