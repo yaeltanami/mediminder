@@ -238,6 +238,6 @@ module.exports = {
     deleteMedication,
     updateMedication,
     getMedicationById,
-    markAsTaken
+    markAsTaken,
     getDueMedicationsStates,
 };
