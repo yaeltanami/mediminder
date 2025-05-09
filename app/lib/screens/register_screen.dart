@@ -69,12 +69,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Provider.of<AuthProvider>(
             context,
             listen: false,
-          ).setToken(data['caregiver']);
+          ).setRole(data['caregiver']);
         } else {
               Provider.of<AuthProvider>(
             context,
             listen: false,
-          ).setToken(data['patient']);
+          ).setRole(data['patient']);
         }
         Navigator.pushReplacement(
           context,
