@@ -15,15 +15,8 @@ const admin = require('../config/firebase'); // או הנתיב המתאים
  *                        לדוגמה: [{time: "08:00", pillsCount: 2}, {time: "20:00", pillsCount: 1}]
  * @returns {Promise<object>} - מחזיר את התרופה החדשה ואת ההודעה למשתמש
  */
-const addMedication = async (userId, name, dose, times, days) => {
+const addMedication = async (patientId, name, dose, times, days) => {
     try {
-         // 🔎 מציאת המטופל לפי userId 
-        const patient = await Patient.findOne({ userId: userId });
-          if (!patient) {
-             throw new Error("❌ Patient not found.");
-        }
-       
-       const patientObjectId = patient._id; // זהו ה-_id שהמונגו יצר
         // יצירת התרופה ושמירתה במסד הנתונים
         let newMedication = new Medication({ patientId, name, dose, times, days });
         let savedMedication = await newMedication.save();
@@ -34,7 +27,7 @@ const addMedication = async (userId, name, dose, times, days) => {
         console.log(`patient id:${patientId} patient name ${name}`)
 
         // שיבוץ התרופה לתא פנוי בקופסה
-        const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientObjectId, savedMedication._id);
+        const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, savedMedication._id);
 
                 // ✅ עדכון התרופה עם מספר התא שנבחר בקופסה
                 savedMedication.slotNumber = slotNumber;
@@ -209,7 +202,7 @@ function isTimeMatching(currentHour, currentMinute, medicationTime) {
     return medHour === currentHour && medMinute === currentMinute;
   }
   
-  const getDueMedicationsStates = async (patientId) => {
+const getDueMedicationsStates = async (patientId) => {
     const patient = await Patient.findById(patientId).populate('medications');
     const now = new Date();
     const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }); // למשל "Sunday"
