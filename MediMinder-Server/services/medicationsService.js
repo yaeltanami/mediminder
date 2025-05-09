@@ -181,10 +181,41 @@ const getMedicationById = async (medicationId) => {
     }
 };
 
+// בדיקת התאמה בין זמן נוכחי לשעת התרופה
+function isTimeMatching(currentHour, currentMinute, medicationTime) {
+    const [medHour, medMinute] = medicationTime.split(':').map(Number);
+  
+    return medHour === currentHour && medMinute === currentMinute;
+  }
+  
+  const getDueMedicationsStates = async (patientId) => {
+    const patient = await Patient.findById(patientId).populate('medications');
+    const now = new Date();
+    const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }); // למשל "Sunday"
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+  
+    let states = ['0', '0', '0', '0', '0']; // חמישה תאים בקופסה
+  
+    for (const medication of patient.medications) {
+      if (medication.days.includes(currentDay)) {
+        console.log(`🔍 Found medication for today: ${medication.name}`);
+        for (const time of medication.times) {
+          console.log(`⏰ Checking if current time (${currentHour}:${currentMinute}) matches time: ${time}`);
+          if (isTimeMatching(currentHour, currentMinute, time)) {
+            console.log(`✅ Time matches for medication: ${medication.name}`);
+            states[medication.slotNumber - 1] = '1';
+          }
+        }
+      }
+    }
+    return states.join('');
+};
 module.exports = {
     addMedication,
     getMedicationsForPatient,
     deleteMedication,
     updateMedication,
-    getMedicationById
+    getMedicationById,
+    getDueMedicationsStates,
 };
