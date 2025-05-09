@@ -1,3 +1,7 @@
+/// RegisterScreen
+/// מסך רישום עבור מטופלים ומטפלים.
+/// כולל אימות שדות, סיסמה עם תנאים, התאמה לתפקיד, עיצוב תואם למסכי האפליקציה.
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,7 +11,7 @@ import 'home_screen.dart';
 import '../config.dart';
 
 class RegisterScreen extends StatefulWidget {
-  final String role; // מטפל או מטופל
+  final String role; // "patient" or "caregiver"
 
   const RegisterScreen({super.key, required this.role});
 
@@ -19,14 +23,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
-  final TextEditingController _relationController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _relationController = TextEditingController(); // למטפל
+  final TextEditingController _ageController = TextEditingController(); // למטופל
 
   final _formKey = GlobalKey<FormState>();
+  final Color mainColor = const Color.fromARGB(255, 32, 134, 134); // צבע אחיד
 
-  /// פונקציה לרישום משתמש חדש בשרת
   Future<void> registerUser() async {
     final url = Uri.parse(
       '${Config.baseUrl}/${widget.role == 'patient' ? 'patients' : 'caregivers'}/register',
@@ -53,21 +56,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = jsonDecode(response.body);
-        print('✅ Registration successful: $responseData');
+        final data = jsonDecode(response.body);
+        Provider.of<AuthProvider>(context, listen: false).setUser(data['user']);
+        Provider.of<AuthProvider>(context, listen: false).setToken(data['token']);
 
-        // שמירת נתוני המשתמש ב-Provider
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        authProvider.setUser(responseData['user']); // שמירת פרטי המשתמש
-        authProvider.setToken(responseData['token']); // שמירת הטוקן
-
-        // מעבר למסך הבית
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
       } else {
-        print('❌ Registration failed: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Registration failed. Please try again."),
@@ -75,62 +72,69 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       }
     } catch (error) {
-      print("❌ Error registering user: $error");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("An error occurred. Please try again.")),
       );
     }
   }
 
-  /// בניית שדות ייחודיים לפי תפקיד (מטופל או מטפל)
+  /// בניית שדה ייחודי לפי סוג המשתמש
   Widget _buildAdditionalFields() {
     if (widget.role == 'caregiver') {
       return TextFormField(
         controller: _relationController,
-        validator:
-            (value) =>
-                value == null || value.isEmpty ? 'Relation is required' : null,
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Relation is required' : null,
         decoration: const InputDecoration(
           labelText: 'Relation to Patient',
           border: OutlineInputBorder(),
         ),
       );
-    } else if (widget.role == 'patient') {
+    } else {
       return TextFormField(
         controller: _ageController,
         keyboardType: TextInputType.number,
-        validator:
-            (value) =>
-                value == null || value.isEmpty
-                    ? 'Birth year is required'
-                    : null,
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Birth year is required' : null,
         decoration: const InputDecoration(
           labelText: 'Year of Birth',
           border: OutlineInputBorder(),
         ),
       );
     }
-    return Container(); // אם אין תפקיד מוגדר
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
+      backgroundColor: const Color.fromARGB(255, 206, 236, 245),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: BackButton(color: mainColor),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Image.asset(
+              'assets/images/welcome.png',
+              width: 40,
+              height: 40,
+            ),
+          ),
+        ],
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
               children: [
+                const SizedBox(height: 40), // רווח מהחלק העליון
                 TextFormField(
                   controller: _nameController,
-                  validator:
-                      (value) =>
-                          value == null || value.isEmpty
-                              ? 'Name is required'
-                              : null,
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Name is required' : null,
                   decoration: const InputDecoration(
                     labelText: 'Name',
                     border: OutlineInputBorder(),
@@ -139,11 +143,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _emailController,
-                  validator:
-                      (value) =>
-                          value == null || !value.contains('@')
-                              ? 'Valid email required'
-                              : null,
+                  validator: (value) =>
+                      value == null || !value.contains('@') ? 'Valid email required' : null,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
@@ -153,11 +154,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  validator:
-                      (value) =>
-                          value == null || value.length < 6
-                              ? 'Password must be at least 6 characters'
-                              : null,
+                  validator: (value) =>
+                      value == null || value.length < 6 ? 'Password must be at least 6 characters' : null,
                   decoration: const InputDecoration(
                     labelText: 'Password',
                     border: OutlineInputBorder(),
@@ -167,11 +165,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: true,
-                  validator:
-                      (value) =>
-                          value != _passwordController.text
-                              ? 'Passwords do not match'
-                              : null,
+                  validator: (value) =>
+                      value != _passwordController.text ? 'Passwords do not match' : null,
                   decoration: const InputDecoration(
                     labelText: 'Confirm Password',
                     border: OutlineInputBorder(),
@@ -179,15 +174,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 10),
                 _buildAdditionalFields(),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      await registerUser();
-                    }
-                  },
-                  child: const Text('Register'),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        await registerUser();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: mainColor,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    ),
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontFamily: 'Urbanist',
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
+                const SizedBox(height: 30),
               ],
             ),
           ),

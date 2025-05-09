@@ -4,13 +4,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../providers/auth_provider.dart';
-import 'add_medication_screen.dart';
 import '../config.dart';
 import '../widgets/weekday_selector.dart';
 import '../widgets/medication_card.dart';
+
 import 'message.dart';
 import 'welcome_screen.dart';
-
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -19,6 +18,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 /// מציג למשתמש את שם המשתמש המחובר, מאפשר לבחור יום בשבוע,
 /// ומציג את כל התרופות שעליו לקחת באותו היום.
 /// בנוסף ניתן להוסיף תרופה חדשה דרך כפתור הפלוס.
+
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,7 +48,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
     // טעינת תרופות
     fetchMedicationsForDay();
 
@@ -104,7 +104,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // שליפת תרופות מהשרת לפי היום והמשתמש המחובר
   Future<void> fetchMedicationsForDay() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final patientId = authProvider.user?['_id'];
@@ -115,8 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-          '${Config.baseUrl}/medications/patient/$patientId/day/$selectedDay',
-        ),
+            '${Config.baseUrl}/medications/patient/$patientId/day/$selectedDay'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -159,71 +157,66 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final username =
-        authProvider.user?['name'] ?? "Guest"; // הצגת שם המשתמש המחובר
 
+    final username = authProvider.user?['name'] ?? "Guest";
+    final Color mainColor = const Color.fromARGB(255, 32, 134, 134);
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // ניווט למסך הוספת תרופה, ואז רענון התרופות
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddMedicationScreen()),
-          );
-          fetchMedicationsForDay();
-        },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
-      ),
+      backgroundColor: const Color.fromARGB(255, 206, 236, 245),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    Text(
-      'Welcome, $username',
-      style: const TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: Colors.blue,
-      ),
-    ),
-    IconButton(
-      icon: const Icon(Icons.logout, color: Colors.red),
-      tooltip: 'Logout',
-      onPressed: () async {
-        final token = authProvider.token;
-        if (token != null) {
-          await logoutUser(token);
-        }
+              // שורת פתיחה עם טקסט, אייקון ו־לוגו
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Welcome, $username',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: mainColor,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.person, color: Color(0xFF208686)),
+onPressed: () async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+  );
+  fetchMedicationsForDay(); // ירענן את התרופות כשחוזרים
+},
 
-        authProvider.setUser(null);
-        authProvider.setToken(null);
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => WelcomeScreen()),
-        );
-      },
-    ),
-  ],
-),
+                      ),
+                      const SizedBox(width: 8),
+                      Image.asset(
+                        'assets/images/welcome.png',
+                        width: 50,
+                        height: 50,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
 
               const SizedBox(height: 24),
 
-              const Center(
+              Center(
                 child: Text(
-                  'Today',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  selectedDay,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // בחירת יום
               WeekdaySelector(
                 selectedDay: selectedDay,
                 onDaySelected: (day) {
@@ -233,34 +226,30 @@ Row(
                   fetchMedicationsForDay();
                 },
               ),
-
               const SizedBox(height: 32),
 
-              // עיגול המציג מידע על מספר התרופות
               Center(
                 child: Container(
                   width: 150,
                   height: 150,
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
+                    color: mainColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.medication,
-                          size: 30,
-                          color: Colors.orange,
-                        ),
+
+                        const Icon(Icons.medication,
+                            size: 30, color: Colors.orange),
                         const SizedBox(height: 8),
                         Text(
-                          '${medications.length}/?', // כמה תרופות יש ליום הזה
-                          style: const TextStyle(
+                          '${medications.length}/?',
+                          style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue,
+                            color: mainColor,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -276,29 +265,24 @@ Row(
                   ),
                 ),
               ),
-
               const SizedBox(height: 32),
 
-              // כותרת לרשימת התרופות
               const Text(
                 'Medications for selected day:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
 
-              // הצגת התרופות או הודעה שאין
               Expanded(
-                child:
-                    medications.isEmpty
-                        ? const Text("No medications for this day.")
-                        : ListView.builder(
-                          itemCount: medications.length,
-                          itemBuilder: (context, index) {
-                            return MedicationCard(
-                              medication: medications[index],
-                            );
-                          },
-                        ),
+                child: medications.isEmpty
+                    ? const Text("No medications for this day.")
+                    : ListView.builder(
+                        itemCount: medications.length,
+                        itemBuilder: (context, index) {
+                          return MedicationCard(
+                              medication: medications[index]);
+                        },
+                      ),
               ),
             ],
           ),
