@@ -56,5 +56,17 @@ const getPatientsForCaregiver = async (req, res) => {
         res.status(404).json({ message: error.message });
     }
 };
+const getCaregiverByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const caregiver = await caregiverService.findByUserId(userId);
+    if (!caregiver) {
+      return res.status(404).json({ message: 'Caregiver not found' });
+    }
+    res.json(caregiver);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-module.exports = { registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver, getPatientsForCaregiver };
+module.exports = { getCaregiverByUserId, registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver, getPatientsForCaregiver };

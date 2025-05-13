@@ -160,5 +160,8 @@ const sendCaregiverReminder = async (caregiver, patientUserId, medication) => {
       console.error('❌ שגיאה בשליחת התראה למטפל:', error);
     }
   };
+const findByUserId = async (userId) => {
+  return await Caregiver.findOne({ userId });
+};  
 
-module.exports = { registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver, getPatientsForCaregiver, sendCaregiverReminder };
+module.exports = { findByUserId, registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver, getPatientsForCaregiver, sendCaregiverReminder };
