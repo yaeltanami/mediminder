@@ -37,6 +37,18 @@ const getCaregiversForPatient = async (req, res) => {
         res.status(404).json({ message: error.message });
     }
 };
+const getPatientByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const patient = await patientService.findByUserId(userId);
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+    res.json(patient);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 
-module.exports = { registerPatient, getCaregiversForPatient };
+module.exports = { registerPatient, getCaregiversForPatient, getPatientByUserId };

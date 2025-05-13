@@ -17,7 +17,11 @@ class ProfileScreen extends StatelessWidget {
 
     final name = user?['name'] ?? 'N/A';
     final email = user?['email'] ?? 'N/A';
-    final age = role?['age']?.toString() ?? 'N/A';
+final birthDateStr = role?['birthDate'];
+final birthDate = birthDateStr != null ? DateTime.tryParse(birthDateStr) : null;
+final age = birthDate != null
+    ? DateTime.now().year - birthDate.year - (DateTime.now().month < birthDate.month || (DateTime.now().month == birthDate.month && DateTime.now().day < birthDate.day) ? 1 : 0)
+    : 'N/A';
 
     return Scaffold(
       backgroundColor: const Color(0xFFCEECF5),

@@ -10,6 +10,9 @@ router.post('/add-patient', caregiverController.addPatientToCaregiver);
 router.post('/remove-patient', caregiverController.removePatientFromCaregiver);
 // החזרת כל מטופליו של מטפל מסוים
 router.get('/patients/:caregiverId', caregiverController.getPatientsForCaregiver);
+// קבלת מטפל לפי שם המשתמש (יוזר)
+router.get('/by-user/:userId', caregiverController.getCaregiverByUserId);
+
 
 
 module.exports = router;

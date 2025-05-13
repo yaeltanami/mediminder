@@ -18,7 +18,6 @@ const sendMedicationReminders = async () => {
         const currentDay = currentTime.toLocaleDateString('en-US', { weekday: 'long' }); 
 
 
-        console.log(`🔎 Checking for medication reminders at: ${currentHourMinute} and ${currentDay}`);
 
         // Find all medications that should be taken at this time
         const medications = await Medication.find({

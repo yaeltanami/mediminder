@@ -108,5 +108,9 @@ const getCaregiversForPatient = async (patientId) => {
     }
 };
 
+const findByUserId = async (userId) => {
+  return await Patient.findOne({ userId });
+};
 
-module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient};
+
+module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient, findByUserId};

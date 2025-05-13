@@ -1,3 +1,4 @@
+
 /// LoginScreen
 /// מסך התחברות לאפליקציית MediMinder.
 /// המשתמש מזין אימייל וסיסמה, ואם הפרטים נכונים – מתבצעת התחברות ומעבר למסך הבית.
@@ -13,7 +14,6 @@ import '../config.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'welcome_screen.dart';
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -25,18 +25,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-    @override
+  @override
   void initState() {
     super.initState();
     printInitialFcmToken(); // הדפסת הטוקן כשהמסך עולה
   }
 
-    void printInitialFcmToken() async {
+  void printInitialFcmToken() async {
     final fcmToken = await FirebaseMessaging.instance.getToken();
     print('📱 FCM Token כשהמסך נטען (לפני התחברות): $fcmToken');
   }
 
-  /// פונקציה ששולחת בקשת POST לשרת כדי לבדוק התחברות
   Future<void> loginUser(String email, String password) async {
     final url = Uri.parse('${Config.baseUrl}/users/login');
 
@@ -50,13 +49,41 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        authProvider.setUser(data['user']); // שמירת פרטי המשתמש
-        authProvider.setToken(data['token']); // שמירת הטוקן
+        authProvider.setUser(data['user']);
+        authProvider.setToken(data['token']);
+
+        final userRole = data['user']['role'];
+        final userId = data['user']['_id'];
+
         try {
-  await sendFcmToken(data['token']);
-} catch (e) {
-  print('🚨 שגיאה בשליחת FCM Token: $e');
-}
+          Uri roleUrl;
+
+          if (userRole == 'patient') {
+            roleUrl = Uri.parse('${Config.baseUrl}/patients/by-user/$userId');
+          } else {
+            roleUrl = Uri.parse('${Config.baseUrl}/caregivers/by-user/$userId');
+          }
+
+          final roleResponse = await http.get(roleUrl, headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${data['token']}',
+          });
+
+          if (roleResponse.statusCode == 200) {
+            final roleData = jsonDecode(roleResponse.body);
+            authProvider.setRole(roleData);
+          } else {
+            print("Failed to fetch role data: ${roleResponse.statusCode}");
+          }
+        } catch (e) {
+          print("Error fetching role data: $e");
+        }
+
+        try {
+          await sendFcmToken(data['token']);
+        } catch (e) {
+          print('🚨 שגיאה בשליחת FCM Token: $e');
+        }
 
         Navigator.pushReplacement(
           context,
@@ -74,33 +101,31 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-Future<void> sendFcmToken(String jwt) async {
-  final fcmToken = await FirebaseMessaging.instance.getToken();
+  Future<void> sendFcmToken(String jwt) async {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    print('lllllllll $fcmToken');
 
-  print('lllllllll $fcmToken');
+    if (fcmToken == null) {
+      print('⚠️ FCM Token is null');
+      return;
+    }
 
-  if (fcmToken == null) {
-    print('⚠️ FCM Token is null');
-    return;
+    final response = await http.post(
+      Uri.parse('${Config.baseUrl}/users/save-token'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $jwt',
+      },
+      body: jsonEncode({'fcmToken': fcmToken}),
+    );
+
+    if (response.statusCode == 200) {
+      print('✅ FCM Token נשלח ונקשר למשתמש בהצלחה');
+    } else {
+      print('❌ שגיאה בשליחת הטוקן: ${response.body}');
+    }
   }
 
-  final response = await http.post(
-    Uri.parse('${Config.baseUrl}/users/save-token'), // עדכון לנתיב הנכון
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $jwt',
-    },
-    body: jsonEncode({'fcmToken': fcmToken}),
-  );
-
-  if (response.statusCode == 200) {
-    print('✅ FCM Token נשלח ונקשר למשתמש בהצלחה');
-  } else {
-    print('❌ שגיאה בשליחת הטוקן: ${response.body}');
-  }
-}
-
-  /// פונקציה שתופעל בעת לחיצה על כפתור ההתחברות
   void _login() {
     String email = _emailController.text.trim();
     String password = _passwordController.text;
@@ -120,22 +145,20 @@ Future<void> sendFcmToken(String jwt) async {
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 206, 236, 245),
-appBar: AppBar(
-  backgroundColor: Colors.transparent,
-  elevation: 0,
-  leading: IconButton(
-    icon: const Icon(Icons.arrow_back),
-    color: Color.fromARGB(255, 32, 134, 134),
-    onPressed: () {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => WelcomeScreen()),
-        (route) => false,
-      );
-    },
-  ),
-
-),
-
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          color: Color.fromARGB(255, 32, 134, 134),
+          onPressed: () {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => WelcomeScreen()),
+              (route) => false,
+            );
+          },
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Align(
@@ -147,15 +170,12 @@ appBar: AppBar(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  // לוגו למעלה
                   Image.asset(
                     'assets/images/welcome.png',
                     width: 170,
                     height: 170,
                   ),
                   const SizedBox(height: 10),
-
-                  // כותרת
                   Text(
                     'Welcome Back!',
                     style: TextStyle(
@@ -166,8 +186,6 @@ appBar: AppBar(
                     ),
                   ),
                   const SizedBox(height: 40),
-
-                  // אימייל
                   TextField(
                     controller: _emailController,
                     decoration: const InputDecoration(
@@ -177,8 +195,6 @@ appBar: AppBar(
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // סיסמה
                   TextField(
                     controller: _passwordController,
                     obscureText: true,
@@ -189,8 +205,6 @@ appBar: AppBar(
                     ),
                   ),
                   const SizedBox(height: 30),
-
-                  // כפתור התחברות
                   SizedBox(
                     width: double.infinity,
                     height: 50,
