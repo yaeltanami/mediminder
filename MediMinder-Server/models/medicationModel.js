@@ -5,6 +5,8 @@ const medicationSchema = new mongoose.Schema({
     patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true }, // מזהה המטופל אליו התרופה שייכת
     name: { type: String, required: true }, // שם התרופה
     dose: { type: String, required: true }, // מינון התרופה
+    times: [{ type: String, required: true }], // שעות נטילה
+    days: [{ type: String, required: true }], // ימי נטילה
         // מערך של שעות נטילה עם מספר כדורים לכל שעה
     times: [{ 
             time: { type: String, required: true }, // שעת הנטילה

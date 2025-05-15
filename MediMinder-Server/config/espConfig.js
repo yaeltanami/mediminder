@@ -1,4 +1,4 @@
 module.exports = {
-    esp32Ip: "http://10.0.0.5",
+    esp32Ip: "http://10.0.0.13",
   };
   
