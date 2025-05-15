@@ -10,30 +10,20 @@ const pillBoxService = require('../services/pillBoxService');
  * @param {string} patientId - מזהה המטופל
  * @param {string} name - שם התרופה
  * @param {string} dose - מינון
- * @param {array} times - מערך המכיל שעות נטילה ומספר כדורים לכל שעה
- *                        לדוגמה: [{time: "08:00", pillsCount: 2}, {time: "20:00", pillsCount: 1}]
+ * @param {array} times - שעות הנטילה
  * @returns {Promise<object>} - מחזיר את התרופה החדשה ואת ההודעה למשתמש
  */
-const addMedication = async (patientId, name, dose, times, days) => {
+const addMedication = async (patientId, name, dose, times) => {
     try {
-         // 🔎 מציאת המטופל לפי userId 
-        const patient = await Patient.findOne({ userId: patientId });
-          if (!patient) {
-             throw new Error("❌ Patient not found.");
-        }
-       
-       const patientObjectId = patient._id; // זהו ה-_id שהמונגו יצר
         // יצירת התרופה ושמירתה במסד הנתונים
-        let newMedication = new Medication({ patientId, name, dose, times, days });
+        let newMedication = new Medication({ patientId, name, dose, times });
         let savedMedication = await newMedication.save();
 
         // הוספת התרופה לרשימת התרופות של המטופל
         await Patient.findByIdAndUpdate(patientId, { $push: { medications: savedMedication._id } });
 
-        console.log(`patient id:${patientId} patient name ${name}`)
-
         // שיבוץ התרופה לתא פנוי בקופסה
-        const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientObjectId, savedMedication._id);
+        const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, savedMedication._id);
 
                 // ✅ עדכון התרופה עם מספר התא שנבחר בקופסה
                 savedMedication.slotNumber = slotNumber;
@@ -119,35 +109,7 @@ const updateMedication = async (medicationId, updateData) => {
         // עדכון הנתונים רק אם התקבלו שדות רלוונטיים
         if (updateData.name) medication.name = updateData.name;
         if (updateData.dose) medication.dose = updateData.dose;
-        if (updateData.times) {
-            if (!Array.isArray(updateData.times)) {
-                throw new Error("Times must be an array of objects.");
-            }
-
-            updateData.times.forEach(entry => {
-                if (!entry.time || typeof entry.pillsCount !== 'number') {
-                    throw new Error("Each entry in 'times' must have a 'time' and a numeric 'pillsCount'.");
-                }
-            });
-
-            medication.times = updateData.times;
-        }
-                // עדכון הימים אם התקבלו
-        if (updateData.days) {
-            const validDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-                    
-            if (!Array.isArray(updateData.days)) {
-                throw new Error("Days must be an array of strings.");
-            }
-        
-             updateData.days.forEach(day => {
-                 if (!validDays.includes(day)) {
-                    throw new Error(`Invalid day provided: ${day}`);
-                }
-            });
-        
-            medication.days = updateData.days;
-        }
+        if (updateData.times) medication.times = updateData.times;
 
         // שמירת השינויים במסד הנתונים
         const updatedMedication = await medication.save();
@@ -181,10 +143,50 @@ const getMedicationById = async (medicationId) => {
     }
 };
 
+// בדיקת התאמה בין זמן נוכחי לשעת התרופה
+function isTimeMatching(currentHour, currentMinute, medicationTime) {
+    const [medHour, medMinute] = medicationTime.split(':').map(Number);
+  
+    return medHour === currentHour && medMinute === currentMinute;
+  }
+  
+  const getDueMedicationsStates = async (patientId) => {
+    const patient = await Patient.findById(patientId).populate('medications');
+    const now = new Date();
+    const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }); // למשל "Sunday"
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    console.log(`📆 Current day: ${currentDay}`);
+    console.log(`🕒 Current time: ${currentHour}:${currentMinute}`);
+
+    let states = ['0', '0', '0', '0', '0']; // חמישה תאים בקופסה
+
+    for (const medication of patient.medications) {
+        console.log(`💊 Checking medication: ${medication.name}`);
+        console.log(`📅 Medication days: ${medication.days}`);
+        if (medication.days.includes(currentDay)) {
+            console.log(`✅ Medication ${medication.name} is valid for today`);
+            for (const time of medication.times) {
+                console.log(`⏰ Comparing time ${time.time} with now`);
+                if (isTimeMatching(currentHour, currentMinute, time.time)) {
+                    console.log(`🎯 Match found! Turning on slot ${medication.slotNumber}`);
+                    states[medication.slotNumber - 1] = '1';
+                }
+            }
+        }else {
+            console.log(`⛔ Medication ${medication.name} is not scheduled for ${currentDay}`);
+          }
+    }
+
+    console.log(`📦 Final LED states: ${states.join('')}`);
+    return states.join('');
+};
 module.exports = {
     addMedication,
     getMedicationsForPatient,
     deleteMedication,
     updateMedication,
-    getMedicationById
+    getMedicationById,
+    getDueMedicationsStates,
 };
