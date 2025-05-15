@@ -1,58 +1,76 @@
+/// WelcomeScreen
+/// This is the first screen of the app. It displays the MediMinder logo,
+/// welcoming text, and buttons to Login or Register.
+
 import 'package:flutter/material.dart';
-// import '../screens/login_screen.dart';  // ייבוא מסך התחברות
-import '../widgets/login_button.dart';  // ייבוא כפתור התחברות
-import '../widgets/register_button.dart';  // ייבוא כפתור רישום
-import '../widgets/app_logo.dart';  // ייבוא תמונת הלוגו
+import '../widgets/login_button.dart';
+import '../widgets/register_button.dart';
 
 class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 206, 236, 245), // תכלת בהיר
       body: Stack(
         children: [
-          // כיתוב "Welcome to"
-          _buildText(
-            context, 'Welcome to', screenWidth, screenHeight * 0.45, 
-            Color.fromARGB(255, 214, 147, 40), 40,
+          // לוגו מעוגל ללא רקע לבן
+          Positioned(
+            top: screenHeight * 0.15,
+            left: screenWidth * 0.125,
+            child: Container(
+              width: screenWidth * 0.7,
+              height: screenWidth * 0.7,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/welcome.png'),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
           ),
-          
-          // כיתוב "MediMinder"
+
+          // טקסט אחיד: Welcome to MediMinder
           _buildText(
-            context, 'MediMinder', screenWidth, screenHeight * 0.52, 
-            Color(0xFF196EB0), 55,
+            context,
+            'Welcome to\n',
+            screenWidth,
+            screenHeight * 0.50,
+            const Color.fromARGB(255, 32, 134, 134), 
+            32,
           ),
-
-          // תמונת הלוגו
-          AppLogo(),
-
-          // כפתור התחברות - כעת משתמשים בכפתור שמייבאים מ-login_button.dart
-          LoginButton(screenWidth: screenWidth, screenHeight: screenHeight), // כפתור התחברות
-
-          // כפתור רישום - כעת משתמשים בכפתור שמייבאים מ-register_button.dart
-          RegisterButton(screenWidth: screenWidth, screenHeight: screenHeight), // כפתור רישום
+          _buildText(
+            context,
+            'MediMinder',
+            screenWidth,
+            screenHeight * 0.55,
+            const Color.fromARGB(255, 32, 134, 134),
+            48,
+          ),
+          // כפתורים
+          LoginButton(screenWidth: screenWidth, screenHeight: screenHeight),
+          RegisterButton(screenWidth: screenWidth, screenHeight: screenHeight),
         ],
       ),
     );
   }
 
-  // פונקציה לבניית טקסט ממורכז
-  Widget _buildText(BuildContext context, String text, double screenWidth, double top, Color color, double fontSize) {
+  Widget _buildText(BuildContext context, String text, double width, double top, Color color, double fontSize) {
     return Positioned(
-      left: screenWidth * 0.1,
       top: top,
+      left: width * 0.1,
       child: SizedBox(
-        width: screenWidth * 0.8,
+        width: width * 0.8,
         child: Text(
           text,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: color,
             fontSize: fontSize,
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.w700,
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Urbanist',
           ),
         ),
       ),

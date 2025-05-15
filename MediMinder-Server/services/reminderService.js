@@ -4,6 +4,9 @@ const Patient = require('../models/patientModel');
 const patientService = require('./patientService');
 const caregiverService = require('./caregiverService');
 const User = require('../models/userModel');
+const { activateDueMedications } = require('../controllers/espController');
+
+
 
 /**
  * Sends reminders to patients who need to take medication at the current time.
@@ -36,6 +39,7 @@ const sendMedicationReminders = async () => {
             console.log(`🔔 Sending reminder to patient ${patient.userId} for medication: ${medication.name}`);
             await patientService.sendPatientReminder(patient.userId, medication._id);  
 
+
             // שליחת תזכורות לכל המטפלים
             const caregivers = await patientService.getCaregiversForPatient(patient._id);
             if (caregivers && caregivers.length > 0) {
@@ -52,6 +56,8 @@ const sendMedicationReminders = async () => {
             } else {
               console.log(`ℹ️ No caregivers found for patient ${patient._id}`);
             }
+            await activateDueMedications(patient._id);
+
         }
     } catch (error) {
         console.error('❌ Error sending medication reminders:', error);

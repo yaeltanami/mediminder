@@ -15,10 +15,10 @@ const admin = require('../config/firebase'); // או הנתיב המתאים
  *                        לדוגמה: [{time: "08:00", pillsCount: 2}, {time: "20:00", pillsCount: 1}]
  * @returns {Promise<object>} - מחזיר את התרופה החדשה ואת ההודעה למשתמש
  */
-const addMedication = async (patientId, name, dose, times, days) => {
+const addMedication = async (userId, name, dose, times, days) => {
     try {
          // 🔎 מציאת המטופל לפי userId 
-        const patient = await Patient.findOne({ userId: patientId });
+        const patient = await Patient.findOne({ userId: userId });
           if (!patient) {
              throw new Error("❌ Patient not found.");
         }
@@ -201,6 +201,37 @@ const markAsTaken = async (userId, medicationId) => {
     console.log(`📤 Sent 'medication_taken' notification to user ${userId}`);
   };
 
+
+// בדיקת התאמה בין זמן נוכחי לשעת התרופה
+function isTimeMatching(currentHour, currentMinute, medicationTime) {
+    const [medHour, medMinute] = medicationTime.split(':').map(Number);
+  
+    return medHour === currentHour && medMinute === currentMinute;
+  }
+  
+  const getDueMedicationsStates = async (patientId) => {
+    const patient = await Patient.findById(patientId).populate('medications');
+    const now = new Date();
+    const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }); // למשל "Sunday"
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+  
+    let states = ['0', '0', '0', '0', '0']; // חמישה תאים בקופסה
+  
+    for (const medication of patient.medications) {
+      if (medication.days.includes(currentDay)) {
+        console.log(`🔍 Found medication for today: ${medication.name}`);
+        for (const time of medication.times) {
+          console.log(`⏰ Checking if current time (${currentHour}:${currentMinute}) matches time: ${time}`);
+          if (isTimeMatching(currentHour, currentMinute, time)) {
+            console.log(`✅ Time matches for medication: ${medication.name}`);
+            states[medication.slotNumber - 1] = '1';
+          }
+        }
+      }
+    }
+    return states.join('');
+};
 module.exports = {
     addMedication,
     getMedicationsForPatient,
@@ -208,4 +239,5 @@ module.exports = {
     updateMedication,
     getMedicationById,
     markAsTaken
+    getDueMedicationsStates,
 };
