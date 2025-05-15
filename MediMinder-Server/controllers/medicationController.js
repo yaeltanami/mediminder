@@ -101,6 +101,24 @@ const getMedicationsByDay = async (req, res) => {
       res.status(500).json({ message: '❌ Error getting medications for day', error: error.message });
     }
   };
+
+//מקבלת מהארדואינו שהתרופה נלקחה ושולח לאפליקציה
+  const markMedicationAsTaken = async (req, res) => {
+    try {
+      const { userId, medicationId } = req.body;
+  
+      if (!userId || !medicationId) {
+        return res.status(400).json({ message: 'userId and medicationId are required' });
+      }
+  
+      await medicationService.markAsTaken(userId, medicationId);
+  
+      res.status(200).json({ message: 'Notification sent' });
+    } catch (error) {
+      console.error('❌ Error in controller:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
   
 
 module.exports = {
@@ -109,5 +127,6 @@ module.exports = {
     deleteMedication,
     updateMedication,
     getMedicationById, 
-    getMedicationsByDay
+    getMedicationsByDay, 
+    markMedicationAsTaken
 };

@@ -1,10 +1,10 @@
 const Patient = require('../models/patientModel');
+const User = require('../models/userModel');
 const PillBox = require('../models/pillBoxModel');
 const userService = require('./userService');
 const pillBoxService = require('./pillBoxService');
 const Medication = require('../models/medicationModel');
-
-
+const admin = require('../config/firebase');
 
 /**
  * רישום מטופל חדש ויצירת קופסת תרופות אוטומטית.
@@ -45,27 +45,45 @@ const registerPatient = async ({ name, email, password, birthDate, caregivers}) 
 /**
  * Sends a reminder notification to a patient to take their medication.
  *
- * @param {string} patientId - The patient's ID
+ * @param {string} userId - The patient's ID
  * @param {string} medicationId - The medication's ID
  */
-const sendPatientReminder = async (patientId, medicationId) => {
-    try {
-        // Fetch medication details from the database
-        const medication = await Medication.findById(medicationId);
-
-        if (!medication) {
-            console.error(`❌ Medication with ID ${medicationId} not found.`);
-            return;
+const sendPatientReminder = async (userId, medicationId) => {
+    try {  
+      const user = await User.findById(userId);
+      if (!user) {
+        console.error(`❌ User for patient ${userId} not found.`);
+        return;
+      }
+      if (!user.fcmToken) {
+        console.warn(`⚠️ User ${user._id} has no FCM token.`);
+        return;
+      }
+      const medication = await Medication.findById(medicationId);
+      if (!medication) {
+        console.error(`❌ Medication with ID ${medicationId} not found.`);
+        return;
+      }
+      const message = {
+        token: user.fcmToken,
+        notification: {
+          title: 'Medication Reminder',
+          body: `Time to take: ${medication.name}`,
+        },
+        data: {
+          action: 'medication_reminder',
+          userId: user._id.toString(),
+          medicationId: medication._id.toString(),
+          medicationName: medication.name,
         }
-
-        console.log(`📢 Reminder sent to patient ${patientId}: Please take your medication - ${medication.name}`);
-
-        // Here you can integrate push notifications or SMS sending
-        // Example: sendPushNotification(patientId, `Time to take your medication: ${medication.name}`);
+      };
+      const response = await admin.messaging().send(message);
+      console.log(`📢 התראה נשלחה למשתמש ${user._id}: ${medication.name}`);
     } catch (error) {
-        console.error('❌ Error sending reminder to patient:', error);
+      console.error('❌ Error sending reminder to patient:', error);
     }
-};
+  };
+  
 
 /**
  * Retrieves the list of caregiver IDs assigned to a patient.
@@ -90,4 +108,9 @@ const getCaregiversForPatient = async (patientId) => {
     }
 };
 
-module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient };
+const findByUserId = async (userId) => {
+  return await Patient.findOne({ userId });
+};
+
+
+module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient, findByUserId};

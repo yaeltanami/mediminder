@@ -2,7 +2,8 @@ const Medication = require('../models/medicationModel');
 const Patient = require('../models/patientModel');
 const PillBox = require('../models/pillBoxModel');
 const pillBoxService = require('../services/pillBoxService');
-
+const User = require('../models/userModel');
+const admin = require('../config/firebase'); // או הנתיב המתאים
 
 /**
  * הוספת תרופה חדשה למטופל ושיבוצה לתא פנוי בקופסת התרופות.
@@ -143,6 +144,26 @@ const getMedicationById = async (medicationId) => {
     }
 };
 
+const markAsTaken = async (userId, medicationId) => {
+   
+    const user = await User.findById(userId);
+    if (!user || !user.fcmToken) {
+      throw new Error('User or FCM token not found');
+    }
+  
+    const message = {
+      token: user.fcmToken,
+      data: {
+        action: 'medication_taken',
+        medicationId,
+      },
+    };
+  
+    await admin.messaging().send(message);
+    console.log(`📤 Sent 'medication_taken' notification to user ${userId}`);
+  };
+
+
 // בדיקת התאמה בין זמן נוכחי לשעת התרופה
 function isTimeMatching(currentHour, currentMinute, medicationTime) {
     const [medHour, medMinute] = medicationTime.split(':').map(Number);
@@ -188,5 +209,6 @@ module.exports = {
     deleteMedication,
     updateMedication,
     getMedicationById,
+    markAsTaken,
     getDueMedicationsStates,
 };

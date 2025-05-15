@@ -44,7 +44,7 @@ const activateDueMedications = async (patientId) => {
 
   console.log(`💡 Activating LEDs with states: ${states}`);
   await sendLedCommand(states);
-  
+
 };
 
 module.exports = {

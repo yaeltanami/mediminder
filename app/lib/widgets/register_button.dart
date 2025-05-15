@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/role_selection_screen.dart';  // ייבוא מסך ההרשמה
+import '../screens/role_selection_screen.dart';
 
 class RegisterButton extends StatelessWidget {
   const RegisterButton({required this.screenWidth, required this.screenHeight});
@@ -9,36 +9,32 @@ class RegisterButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
+      top: screenHeight * 0.79,
       left: screenWidth * 0.1,
-      top: screenHeight * 0.85,
       child: SizedBox(
         width: screenWidth * 0.8,
         height: screenHeight * 0.07,
         child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white, // רקע לבן
-            side: const BorderSide(color: Color(0xFF196EB0), width: 2), // מסגרת כחולה
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30), // קצוות מעוגלים
-            ),
-          ),
           onPressed: () {
-            // ניווט למסך ההרשמה
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => RoleSelectionScreen()), // מעבר למסך RoleSelectionScreen
+              MaterialPageRoute(builder: (_) => RoleSelectionScreen()),
             );
           },
-          child: const Center(
-            child: Text(
-              'Register',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFF196EB0), // טקסט כחול
-                fontSize: 22,
-                fontFamily: 'Urbanist',
-                fontWeight: FontWeight.w600,
-              ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            side: const BorderSide(color: Color.fromARGB(255, 32, 134, 134), width: 2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+          child: const Text(
+            'Register',
+            style: TextStyle(
+              fontSize: 22,
+              color: Color.fromARGB(255, 32, 134, 134),
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Urbanist',
             ),
           ),
         ),

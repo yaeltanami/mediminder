@@ -13,7 +13,6 @@ const medicationSchema = new mongoose.Schema({
             pillsCount: { type: Number, required: true, min: 1 } // מספר כדורים בשעה זו
         }],
     days: [{ type: String, enum: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] }], // ימים שבהם יש לקחת את התרופה
-    
     slotNumber: { type: Number, min: 1, max: 5 } // מספר התא בקופסה (אם מוקצה)
 }, { timestamps: true });
 

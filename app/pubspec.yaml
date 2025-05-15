@@ -11,6 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  firebase_core: ^2.24.0  
+  firebase_messaging: ^14.7.1
   http: ^0.13.5  
   cupertino_icons: ^1.0.8
   provider: ^6.1.4
@@ -23,4 +25,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/medi_logo.png  # 
+    - assets/images/welcome.png  # 

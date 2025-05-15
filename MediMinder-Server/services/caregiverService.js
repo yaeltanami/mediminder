@@ -1,6 +1,8 @@
 const Caregiver = require('../models/caregiverModel');
 const userService = require('./userService');
 const Patient = require('../models/patientModel');
+const admin = require('../config/firebase');
+
 
 /**
  * יצירת מטפל (`Caregiver`) עם `User`
@@ -127,4 +129,39 @@ const getPatientsForCaregiver = async (caregiverId) => {
     }
 };
 
-module.exports = { registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver, getPatientsForCaregiver };
+
+const sendCaregiverReminder = async (caregiver, patientUserId, medication) => {
+    
+    try {
+      const caregiverUser = await User.findById(caregiver.userId);
+      if (!caregiverUser || !caregiverUser.fcmToken) {
+        console.warn(`⚠️ Caregiver ${caregiverId} has no FCM token`);
+        return;
+      }
+  
+      // שליחת ההתראה
+      const message = {
+        token: caregiverUser.fcmToken,
+        notification: {
+          title: 'המטופל שלך צריך לקחת תרופה',
+          body: `יש לעקוב אחרי התרופה: ${medication.name}`,
+        },
+        data: {
+          action: 'caregiver_reminder',
+          patientUserId: patientUserId.toString(),
+          medicationId: medication._id.toString(),
+          medicationName: medication.name,
+        }
+      };
+  
+      await admin.messaging().send(message);
+      console.log(`📨 התראה נשלחה למטפל ${caregiverUser.name} על התרופה ${medication.name}`);
+    } catch (error) {
+      console.error('❌ שגיאה בשליחת התראה למטפל:', error);
+    }
+  };
+const findByUserId = async (userId) => {
+  return await Caregiver.findOne({ userId });
+};  
+
+module.exports = { findByUserId, registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver, getPatientsForCaregiver, sendCaregiverReminder };
