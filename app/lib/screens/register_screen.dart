@@ -1,7 +1,3 @@
-/// RegisterScreen
-/// מסך רישום עבור מטופלים ומטפלים.
-/// כולל אימות שדות, סיסמה עם תנאים, התאמה לתפקיד, עיצוב תואם למסכי האפליקציה.
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -9,9 +5,10 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'home_screen.dart';
 import '../config.dart';
+import '../services/notifications_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class RegisterScreen extends StatefulWidget {
-  final String role; // "patient" or "caregiver"
   final String role;
 
   const RegisterScreen({super.key, required this.role});
@@ -92,6 +89,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _registerUser() async {
     final role = widget.role;
+
     final validPatientEmails =
         role == 'caregiver'
             ? _patientFields
@@ -125,26 +123,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         authProvider.setUser(data['user']);
         authProvider.setToken(data['token']);
+         await NotificationsService().sendFcmToken(data['token']); 
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomeScreen()),
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Registration failed. Please try again."),
-          ),
-        );
-      }
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("An error occurred. Please try again.")),
-      );
-    }
-  }
-
-  /// בניית שדה ייחודי לפי סוג המשתמש
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text("Registration failed.")));
@@ -257,24 +242,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ],
       ),
-      backgroundColor: const Color.fromARGB(255, 206, 236, 245),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: BackButton(color: mainColor),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Image.asset(
-              'assets/images/welcome.png',
-              width: 40,
-              height: 40,
-            ),
-          ),
-        ],
-      ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Form(
           key: _formKey,

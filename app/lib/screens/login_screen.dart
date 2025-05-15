@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'home_screen.dart';
 import '../config.dart';
+import '../services/notifications_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -50,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         authProvider.setUser(data['user']); // שמירת פרטי המשתמש
         authProvider.setToken(data['token']); // שמירת הטוקן
-        await sendFcmToken(data['token']);//שליחת הטוקן לשרת
+        await NotificationsService().sendFcmToken(data['token']); 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -66,32 +67,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
   }
-
-Future<void> sendFcmToken(String jwt) async {
-  final fcmToken = await FirebaseMessaging.instance.getToken();
-
-  print('🔄 מנסה לשלוח את ה-FCM Token לאחר התחברות: $fcmToken');
-
-  if (fcmToken == null) {
-    print('⚠️ FCM Token is null');
-    return;
-  }
-
-  final response = await http.post(
-    Uri.parse('${Config.baseUrl}/users/save-token'), // עדכון לנתיב הנכון
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $jwt',
-    },
-    body: jsonEncode({'fcmToken': fcmToken}),
-  );
-
-  if (response.statusCode == 200) {
-    print('✅ FCM Token נשלח ונקשר למשתמש בהצלחה');
-  } else {
-    print('❌ שגיאה בשליחת הטוקן: ${response.body}');
-  }
-}
 
   /// פונקציה שתופעל בעת לחיצה על כפתור ההתחברות
   void _login() {
