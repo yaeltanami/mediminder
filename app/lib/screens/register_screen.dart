@@ -24,6 +24,7 @@ class PatientField {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final Color mainColor = const Color.fromARGB(255, 32, 134, 134);
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -86,8 +87,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _registerUser() async {
     final role = widget.role;
-
-    // נבנה את רשימת המטופלים רק אם מדובר במטפל
     final validPatientEmails =
         role == 'caregiver'
             ? _patientFields
@@ -96,12 +95,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 .toList()
             : [];
 
-    // בונים נתיב מתאים לפי תפקיד
     final url = Uri.parse(
       '${Config.baseUrl}/${role == 'patient' ? 'patients' : 'caregivers'}/register',
     );
 
-    // מכינים את גוף הבקשה לפי תפקיד
     final requestData = {
       'name': _nameController.text.trim(),
       'email': _emailController.text.trim(),
@@ -111,35 +108,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'birthDate': '${_birthYearController.text.trim()}-01-01',
     };
 
-    print('📦 Sending: $requestData');
-
     try {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestData),
       );
-      print('🔎 Status: ${response.statusCode}');
-      print('📩 Response body: ${response.body}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
-
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         authProvider.setUser(data['user']);
         authProvider.setToken(data['token']);
-
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
       } else {
-        // print("❌ Registration failed: ${response.body}");
-        // ScaffoldMessenger.of(
-        //   context,
-        // ).showSnackBar(const SnackBar(content: Text("Registration failed.")));
-        print('❌ Server responded with error: ${response.statusCode}');
-        print('🪵 ${response.body}');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Registration failed.")));
       }
     } catch (e) {
       print("❌ Error: $e");
@@ -233,13 +221,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
+      backgroundColor: const Color.fromARGB(255, 206, 236, 245),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: BackButton(color: mainColor),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Image.asset(
+              'assets/images/welcome.png',
+              width: 40,
+              height: 40,
+            ),
+          ),
+        ],
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
+              const SizedBox(height: 40),
               TextFormField(
                 controller: _nameController,
                 validator:
@@ -293,15 +297,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 10),
               _buildAdditionalFields(),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _registerUser();
-                  }
-                },
-                child: const Text('Register'),
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _registerUser();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: mainColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text(
+                    'Register',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontFamily: 'Urbanist',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
