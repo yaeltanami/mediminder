@@ -14,7 +14,7 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        const { user, token } = await userService.registerUser(name, email, password, role);
+        const { user, token } = await userService.registerUser({ name, email, password, role });
         res.status(201).json({ user, token });
     } catch (error) {
         res.status(400).json({ message: error.message });
