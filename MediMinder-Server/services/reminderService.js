@@ -30,7 +30,9 @@ const sendMedicationReminders = async () => {
              return;
         }
         for (const medication of medications) { 
-            const patient = await Patient.findOne({ userId: medication.patientId });
+            // const patient = await Patient.findOne({ userId: medication.patientId });
+             const patient = await Patient.findById(medication.patientId);
+
             if (!patient) {
                 console.warn(`⚠️ No patient found for user ${patient.userId}`);
                 continue;

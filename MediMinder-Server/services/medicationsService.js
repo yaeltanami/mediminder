@@ -15,10 +15,10 @@ const admin = require('../config/firebase'); // או הנתיב המתאים
  *                        לדוגמה: [{time: "08:00", pillsCount: 2}, {time: "20:00", pillsCount: 1}]
  * @returns {Promise<object>} - מחזיר את התרופה החדשה ואת ההודעה למשתמש
  */
-const addMedication = async (userId, name, dose, times, days) => {
+const addMedication = async (patientId, name, dose, times, days) => {
     try {
          // 🔎 מציאת המטופל לפי userId 
-        const patient = await Patient.findOne({ userId: userId });
+        const patient = await Patient.findById(patientId);
           if (!patient) {
              throw new Error("❌ Patient not found.");
         }
