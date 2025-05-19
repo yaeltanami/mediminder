@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../config.dart'; // קובץ שמחזיק את כתובת ה-API
-import /'package:flutter/services.dart'; // נדרש בשביל ה- TextInputFormatter
+import 'package:flutter/services.dart'; // נדרש בשביל ה- TextInputFormatter
 import '../config.dart';
 import 'package:flutter/services.dart';
 
