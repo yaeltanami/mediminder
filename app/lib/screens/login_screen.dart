@@ -13,6 +13,8 @@ import 'home_screen.dart';
 import '../config.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'welcome_screen.dart';
+import '../services/notifications_service.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -80,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         try {
-          await sendFcmToken(data['token']);
+        await NotificationsService().sendFcmToken(data['token']);
         } catch (e) {
           print('🚨 שגיאה בשליחת FCM Token: $e');
         }
@@ -98,31 +100,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("An error occurred.")),
       );
-    }
-  }
-
-  Future<void> sendFcmToken(String jwt) async {
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    print('lllllllll $fcmToken');
-
-    if (fcmToken == null) {
-      print('⚠️ FCM Token is null');
-      return;
-    }
-
-    final response = await http.post(
-      Uri.parse('${Config.baseUrl}/users/save-token'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $jwt',
-      },
-      body: jsonEncode({'fcmToken': fcmToken}),
-    );
-
-    if (response.statusCode == 200) {
-      print('✅ FCM Token נשלח ונקשר למשתמש בהצלחה');
-    } else {
-      print('❌ שגיאה בשליחת הטוקן: ${response.body}');
     }
   }
 
