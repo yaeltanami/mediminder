@@ -34,6 +34,22 @@ void setupFirebaseMessaging() {
         ),
       );
     }
+    if (action == 'caregiver_reminder') {
+      final patientName = data['patientName'];
+      final medicationId = data['medicationId'];
+      final medicationName = data['medicationName'];
+
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder:
+              (context) => CaregiverReminderScreen(
+                patientName: patientName,
+                medicationId: medicationId,
+                medicationName: medicationName,
+              ),
+        ),
+      );
+    }
 
     // ניתן להוסיף כאן את טיפול ב-caregiver_reminder בעתיד
   });
@@ -62,7 +78,7 @@ void setupFirebaseMessaging() {
     }
 
     if (action == 'caregiver_reminder') {
-      final patientUserId = data['patientUserId'];
+      final patientName = data['patientName'];
       final medicationId = data['medicationId'];
       final medicationName = data['medicationName'];
 
@@ -70,7 +86,7 @@ void setupFirebaseMessaging() {
         MaterialPageRoute(
           builder:
               (context) => CaregiverReminderScreen(
-                patientName: patientUserId,
+                patientName: patientName,
                 medicationId: medicationId,
                 medicationName: medicationName,
               ),

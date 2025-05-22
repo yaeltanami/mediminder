@@ -28,10 +28,10 @@ const registerPatient = async (req, res) => {
 /**
  * Controller to get the list of caregiver IDs for a specific patient.
  */
-const getCaregiversForPatient = async (req, res) => {
+const getCaregiversNamesForPatient = async (req, res) => {
     try {
         const { patientId } = req.params;
-        const caregiverIds = await patientService.getCaregiversForPatient(patientId);
+        const caregiverIds = await patientService.getCaregiversNamesForPatient(patientId);
         res.status(200).json(caregiverIds);
     } catch (error) {
         res.status(404).json({ message: error.message });
@@ -61,4 +61,4 @@ const getPatientByEmail = async (req, res) => {
   };
 
 
-module.exports = { registerPatient, getCaregiversForPatient, getPatientByUserId, getPatientByEmail };
+module.exports = { registerPatient, getCaregiversNamesForPatient, getPatientByUserId, getPatientByEmail };
