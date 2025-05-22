@@ -91,6 +91,4 @@ const getPatientByEmail = async (req, res) => {
   }
 };
 
-
-
 module.exports = { registerPatient, getCaregiversNamesForPatient, getPatientByUserId, getPatientByEmail, getUserByPatientId };
