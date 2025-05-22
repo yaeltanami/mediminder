@@ -14,14 +14,16 @@ const admin = require('../config/firebase'); // או הנתיב המתאים
  * @param {array} times - שעות הנטילה
  * @returns {Promise<object>} - מחזיר את התרופה החדשה ואת ההודעה למשתמש
  */
-const addMedication = async (patientId, name, dose, times) => {
+const addMedication = async (patientId, name, dose, times, days) => {
     try {
         // יצירת התרופה ושמירתה במסד הנתונים
-        let newMedication = new Medication({ patientId, name, dose, times });
+        let newMedication = new Medication({ patientId, name, dose, times, days });
         let savedMedication = await newMedication.save();
 
         // הוספת התרופה לרשימת התרופות של המטופל
         await Patient.findByIdAndUpdate(patientId, { $push: { medications: savedMedication._id } });
+
+        console.log(`patient id:${patientId} patient name ${name}`)
 
         // שיבוץ התרופה לתא פנוי בקופסה
         const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, savedMedication._id);

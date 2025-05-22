@@ -92,6 +92,9 @@ const sendMedicationReminders = async () => {
           days: currentDay
         });
 
+        if (!medications){
+          console.log("medications", medications);}
+
       if (!medications || !Array.isArray(medications)) {
            console.log("⏩ No valid medications found for this time, skipping reminders.");
            return;
@@ -108,7 +111,7 @@ const sendMedicationReminders = async () => {
           await patientService.sendPatientReminder(patient.userId, medication._id);  
 
 
-          // // שליחת תזכורות לכל המטפלים
+          // שליחת תזכורות לכל המטפלים
           // const caregivers = await patientService.getCaregiversForPatient(patient._id);
           // if (caregivers && caregivers.length > 0) {
           //   await Promise.all(
@@ -135,7 +138,6 @@ const sendMedicationReminders = async () => {
 // Schedule the function to run every minute
 cron.schedule('* * * * *', () => {
     sendMedicationReminders();
-    console.log("📅 Medication reminder service is running...");
 });
 
 module.exports = { sendMedicationReminders };

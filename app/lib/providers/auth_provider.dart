@@ -6,7 +6,7 @@ class AuthProvider extends ChangeNotifier {
   String? _token;
 
   Map<String, dynamic>? get user => _user;
-    Map<String, dynamic>? get role => _role;
+  Map<String, dynamic>? get role => _role;
   String? get token => _token;
 
   void setUser(Map<String, dynamic>? userData) {
