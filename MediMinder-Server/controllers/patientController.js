@@ -1,4 +1,7 @@
 const patientService = require('../services/patientService');
+const Patient = require('../models/patientModel');
+const User = require('../models/userModel');
+
 const jwt = require('jsonwebtoken');
 
 
@@ -61,4 +64,31 @@ const getPatientByEmail = async (req, res) => {
   };
 
 
-module.exports = { registerPatient, getCaregiversNamesForPatient, getPatientByUserId, getPatientByEmail };
+  const getUserByPatientId = async (req, res) => {
+    console.log("trying to get user by patient id");
+  try {
+    const { patientId } = req.params;
+
+    // שלב 1 – מציאת המטופל לפי ה־ID
+    const patient = await Patient.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    // שלב 2 – מציאת היוזר לפי ה־userId שנמצא במטופל
+    const user = await User.findById(patient.userId).select('name email _id'); // שדות רלוונטיים בלבד
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found for patient' });
+    }
+
+    // שלב 3 – מחזירים את פרטי היוזר
+    res.json(user);
+
+  } catch (error) {
+    console.error('❌ Error in getUserByPatientId:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = { registerPatient, getCaregiversNamesForPatient, getPatientByUserId, getPatientByEmail, getUserByPatientId };

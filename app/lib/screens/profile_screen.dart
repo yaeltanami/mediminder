@@ -4,7 +4,6 @@ import '../providers/auth_provider.dart';
 import 'medications_management_screen.dart';
 import 'caregivers_screen.dart';
 import 'login_screen.dart';
-import 'home_screen.dart';
 import '../services/notifications_service.dart';
 
 class ProfileScreen extends StatelessWidget {

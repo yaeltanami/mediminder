@@ -58,17 +58,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
         final userRole = data['user']['role'];
         final userId = data['user']['_id'];
-        print('userRole ${userRole}');
 
         try {
           Uri roleUrl;
           if (userRole == 'patient') {
-            print("patient");
             roleUrl = Uri.parse('${Config.baseUrl}/patients/by-user/$userId');
           } else {
             roleUrl = Uri.parse('${Config.baseUrl}/caregivers/by-user/$userId');
           }
-          print("before server2");
 
           final roleResponse = await http.get(
             roleUrl,

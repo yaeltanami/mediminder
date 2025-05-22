@@ -7,7 +7,8 @@ import '../providers/auth_provider.dart';
 import 'add_medication_screen.dart';
 
 class MedicationsManagementScreen extends StatefulWidget {
-  const MedicationsManagementScreen({super.key});
+  final String? patientId;
+  const MedicationsManagementScreen({this.patientId, super.key});
 
   @override
   State<MedicationsManagementScreen> createState() => _MedicationsManagementScreenState();
@@ -44,7 +45,7 @@ class _MedicationsManagementScreenState extends State<MedicationsManagementScree
 
   Future<void> fetchMedications() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final patientId = authProvider.role?['_id'];
+    final patientId = widget.patientId ?? authProvider.role?['_id'];
     final token = authProvider.token;
 
     if (patientId == null || token == null) return;

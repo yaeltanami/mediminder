@@ -8,5 +8,6 @@ router.post('/register', patientController.registerPatient);
 router.get('/caregivers/:patientId', patientController.getCaregiversNamesForPatient);
 router.get('/by-user/:userId', patientController.getPatientByUserId);
 router.get('/by-email', patientController.getPatientByEmail);
+router.get('/:patientId/user', patientController.getUserByPatientId);
 
 module.exports = router;
