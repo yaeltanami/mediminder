@@ -2,35 +2,71 @@ const Caregiver = require('../models/caregiverModel');
 const userService = require('./userService');
 const Patient = require('../models/patientModel');
 const admin = require('../config/firebase');
+const User = require('../models/userModel');
 
 
 /**
  * יצירת מטפל (`Caregiver`) עם `User`
  */
-const registerCaregiver = async ({ name, email, password, patients, relation }) => {
-    // יצירת משתמש עם role קבוע ל'caregiver'
-    const user = await userService.registerUser({ name, email, password, role: 'caregiver' });
-
-    // יצירת מטפל חדש עם פרטי המשתמש
-    const caregiver = await Caregiver.create({
-        userId: user._id,
-        patients: patients || [],
-        relation: relation
-    });
-
-    // קישור המטופלים למטפל
-    if (patients && patients.length > 0) {
-        await Patient.updateMany(
-            { _id: { $in: patients } },
-            { $push: { caregivers: caregiver._id } }
-        );
+const registerCaregiver = async ({ name, email, password, patientsEmails }) => {
+    const patientIds = [];
+  
+    // 1. בדיקת המטופלים לפני כל דבר אחר
+    for (const email of patientsEmails) {
+      const patientUser = await User.findOne({ email, role: 'patient' });
+      if (!patientUser) {
+        console.log(`⚠️ Patient user not found for email: ${email}`);
+        continue;
+      }
+  
+      const patient = await Patient.findOne({ userId: patientUser._id });
+      if (!patient) {
+        console.log(`⚠️ Patient record not found for userId: ${patientUser._id}`);
+        continue;
+      }
+  
+      patientIds.push(patient._id);
     }
-
-    // יצירת טוקן
+  
+    // 2. יצירת משתמש מסוג caregiver
+    const user = await userService.registerUser({
+      name,
+      email,
+      password,
+      role: 'caregiver',
+    });
+    
+    // 3. יצירת caregiver ושמירה
+    let caregiver;
+    try {
+      caregiver = new Caregiver({
+        userId: user._id,
+        patients: patientIds,
+      });
+  
+      await caregiver.save();
+      console.log('✅ Caregiver saved:', caregiver._id);
+    } catch (err) {
+      console.error('❌ Failed to save caregiver:', err.message);
+  
+      // 🧹 אם נכשלת, ננקה את המשתמש שיצרנו
+      await User.findByIdAndDelete(user._id);
+      throw new Error('Failed to create caregiver – user was deleted');
+    }
+  
+    // 4. קשר דו-כיווני למטופלים
+for (const patientId of patientIds) {
+  try {
+    await addCaregiverToPatient(caregiver._id, patientId);
+  } catch (err) {
+    console.error(`❌ Failed to link patient ${patientId} to caregiver:, err.message`);
+  }
+}
+    // 5. יצירת טוקן
     const token = userService.generateToken(user._id, user.role);
-
+  
     return { user, caregiver, token };
-};
+  };
 
 
 /**
@@ -40,7 +76,7 @@ const registerCaregiver = async ({ name, email, password, patients, relation }) 
  * @param {string} patientId - מזהה המטופל
  * @returns {Promise<object>} - מחזיר הודעת הצלחה
  */
-const addPatientToCaregiver = async (caregiverId, patientId) => {
+const addCaregiverToPatient = async (caregiverId, patientId) => {
     try {
         // בדיקה אם המטפל קיים
         const caregiver = await Caregiver.findById(caregiverId);
@@ -49,15 +85,6 @@ const addPatientToCaregiver = async (caregiverId, patientId) => {
         // בדיקה אם המטופל קיים
         const patient = await Patient.findById(patientId);
         if (!patient) throw new Error("Patient not found.");
-
-        // בדיקה אם המטופל כבר קיים אצל המטפל
-        if (caregiver.patients.includes(patientId)) {
-            throw new Error("Patient is already assigned to this caregiver.");
-        }
-
-        // הוספת המטופל לרשימת המטופלים של המטפל
-        caregiver.patients.push(patientId);
-        await caregiver.save();
 
         // הוספת המטפל לרשימת המטפלים של המטופל
         patient.caregivers.push(caregiverId);
@@ -135,9 +162,10 @@ const sendCaregiverReminder = async (caregiver, patientUserId, medication) => {
     try {
       const caregiverUser = await User.findById(caregiver.userId);
       if (!caregiverUser || !caregiverUser.fcmToken) {
-        console.warn(`⚠️ Caregiver ${caregiverId} has no FCM token`);
+        console.warn(`⚠️ Caregiver ${caregiver.userId} has no FCM token`);
         return;
       }
+      const patient = await User.findById(patientUserId);
   
       // שליחת ההתראה
       const message = {
@@ -148,7 +176,7 @@ const sendCaregiverReminder = async (caregiver, patientUserId, medication) => {
         },
         data: {
           action: 'caregiver_reminder',
-          patientUserId: patientUserId.toString(),
+          patientName: patient.name,
           medicationId: medication._id.toString(),
           medicationName: medication.name,
         }
@@ -164,4 +192,4 @@ const findByUserId = async (userId) => {
   return await Caregiver.findOne({ userId });
 };  
 
-module.exports = { findByUserId, registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver, getPatientsForCaregiver, sendCaregiverReminder };
+module.exports = { findByUserId, registerCaregiver, addCaregiverToPatient, removePatientFromCaregiver, getPatientsForCaregiver, sendCaregiverReminder };
