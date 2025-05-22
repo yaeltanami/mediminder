@@ -92,4 +92,4 @@ const getPatientByEmail = async (req, res) => {
 };
 
 
-module.exports = { registerPatient, getCaregiversForPatient, getPatientByUserId, getPatientByEmail, getUserByPatientId };
+module.exports = { registerPatient, getPatientByUserId, getPatientByEmail, getUserByPatientId };
