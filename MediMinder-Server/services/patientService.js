@@ -67,16 +67,26 @@ const sendPatientReminder = async (userId, medicationId) => {
       const message = {
         token: user.fcmToken,
         notification: {
-          title: 'Medication Reminder',
-          body: `Time to take: ${medication.name}`,
+          title: '\u200EMedication Reminder',
+          body: `\u200ETime to take: ${medication.name}`,
+        },
+        android: {
+          notification: {
+            icon: 'notification_icon', // שם הקובץ בלי סיומת (למשל notification_icon.png)
+            color: '#FFCC00' // צהוב בהיר – תואם ללוגו שלך
+          }
         },
         data: {
           action: 'medication_reminder',
           userId: user._id.toString(),
           medicationId: medication._id.toString(),
           medicationName: medication.name,
+          slotNumber: medication.slotNumber.toString(),
         }
       };
+
+
+
       const response = await admin.messaging().send(message);
       console.log(`📢 התראה נשלחה למשתמש ${user._id}: ${medication.name}`);
     } catch (error) {
@@ -112,5 +122,17 @@ const findByUserId = async (userId) => {
   return await Patient.findOne({ userId });
 };
 
+const getPatientByEmail = async (email) => {
+  if (!email) throw new Error('Email is required');
 
-module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient, findByUserId};
+  const user = await User.findOne({ email, role: 'patient' });
+  if (!user) throw new Error('Patient not found');
+
+  const patient = await Patient.findOne({ userId: user._id });
+  if (!patient) throw new Error('Patient data not found');
+
+  return patient;
+};
+
+
+module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient, findByUserId, getPatientByEmail};

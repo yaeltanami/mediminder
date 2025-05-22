@@ -5,14 +5,19 @@ const caregiverService = require('../services/caregiverService');
  */
 const registerCaregiver = async (req, res) => {
     try {
-        const { name, email, password, patients, relation } = req.body;
+        const { name, email, password, patientsEmails } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        const { user, caregiver, token } = await caregiverService.registerCaregiver({ name, email, password, patients, relation });
-        res.status(201).json({ user, caregiver, token });
+        const data = await caregiverService.registerCaregiver({
+            name,
+            email,
+            password,
+            patientsEmails,
+        });
+        res.status(201).json(data);
 
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -21,10 +26,10 @@ const registerCaregiver = async (req, res) => {
 /**
  * בקר להוספת מטופל למטפל
  */
-const addPatientToCaregiver = async (req, res) => {
+const addCaregiverToPatient = async (req, res) => {
     try {
         const { caregiverId, patientId } = req.body;
-        const response = await caregiverService.addPatientToCaregiver(caregiverId, patientId);
+        const response = await caregiverService.addCaregiverToPatient(caregiverId, patientId);
         res.status(200).json(response);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -69,4 +74,4 @@ const getCaregiverByUserId = async (req, res) => {
   }
 };
 
-module.exports = { getCaregiverByUserId, registerCaregiver, addPatientToCaregiver, removePatientFromCaregiver, getPatientsForCaregiver };
+module.exports = { getCaregiverByUserId, registerCaregiver, addCaregiverToPatient, removePatientFromCaregiver, getPatientsForCaregiver };

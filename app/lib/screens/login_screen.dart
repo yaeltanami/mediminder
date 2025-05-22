@@ -1,4 +1,3 @@
-
 /// LoginScreen
 /// מסך התחברות לאפליקציית MediMinder.
 /// המשתמש מזין אימייל וסיסמה, ואם הפרטים נכונים – מתבצעת התחברות ומעבר למסך הבית.
@@ -14,7 +13,6 @@ import '../config.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'welcome_screen.dart';
 import '../services/notifications_service.dart';
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -34,14 +32,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void printInitialFcmToken() async {
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    print('📱 FCM Token כשהמסך נטען (לפני התחברות): $fcmToken');
+    // final fcmToken = await FirebaseMessaging.instance.getToken();
   }
 
   Future<void> loginUser(String email, String password) async {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    print('📱 FCM Token כשהמסך נטען (לפני התחברות): $fcmToken');
+
     final url = Uri.parse('${Config.baseUrl}/users/login');
 
     try {
+      print("before server");
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -49,6 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (response.statusCode == 200) {
+        print("server secsses");
         final data = jsonDecode(response.body);
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         authProvider.setUser(data['user']);
@@ -56,23 +58,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
         final userRole = data['user']['role'];
         final userId = data['user']['_id'];
+        print('userRole ${userRole}');
 
         try {
           Uri roleUrl;
-
           if (userRole == 'patient') {
+            print("patient");
             roleUrl = Uri.parse('${Config.baseUrl}/patients/by-user/$userId');
           } else {
             roleUrl = Uri.parse('${Config.baseUrl}/caregivers/by-user/$userId');
           }
+          print("before server2");
 
-          final roleResponse = await http.get(roleUrl, headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ${data['token']}',
-          });
+          final roleResponse = await http.get(
+            roleUrl,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${data['token']}',
+            },
+          );
 
           if (roleResponse.statusCode == 200) {
             final roleData = jsonDecode(roleResponse.body);
+            print("roleData: ${roleData}");
             authProvider.setRole(roleData);
           } else {
             print("Failed to fetch role data: ${roleResponse.statusCode}");
@@ -82,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         try {
-        await NotificationsService().sendFcmToken(data['token']);
+          await NotificationsService().sendFcmToken(data['token']);
         } catch (e) {
           print('🚨 שגיאה בשליחת FCM Token: $e');
         }
@@ -93,13 +101,15 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Incorrect email or password. Please try again.")),
+          const SnackBar(
+            content: Text("Incorrect email or password. Please try again."),
+          ),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("An error occurred.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("An error occurred.")));
     }
   }
 
@@ -188,7 +198,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: mainColor,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
                       ),
                       onPressed: _login,
                       child: const Text(

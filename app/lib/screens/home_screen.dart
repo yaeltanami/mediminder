@@ -50,58 +50,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // טעינת תרופות
     fetchMedicationsForDay();
-
-    // מאזין להתראות מהשרת כשהאפליקציה פתוחה
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('📲 FCM message received!');
-
-      if (message.data.isNotEmpty) {
-        final action = message.data['action'];
-
-        if (action == 'medication_reminder') {
-          final userId = message.data['userId'];
-          final medicationId = message.data['medicationId'];
-          final medicationName = message.data['medicationName'];
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (_) => MessageScreen(
-                    userId: userId,
-                    medicationId: medicationId,
-                    medicationName: medicationName,
-                    isCaregiver: false, // מטופל
-                  ),
-            ),
-          );
-        } else if (action == 'caregiver_reminder') {
-          final patientUserId = message.data['patientUserId'];
-          final medicationId = message.data['medicationId'];
-          final medicationName = message.data['medicationName'];
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (_) => MessageScreen(
-                    userId: patientUserId,
-                    medicationId: medicationId,
-                    medicationName: medicationName,
-                    isCaregiver: true, // מטפל
-                  ),
-            ),
-          );
-        } else if (action == 'medication_taken') {
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
-            print('✅ Closed message screen: medication taken.');
-          }
-        } else {
-          print('⚠️ Unknown action received: $action');
-        }
-      }
-    });
   }
 
   Future<void> fetchMedicationsForDay() async {
@@ -114,7 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-            '${Config.baseUrl}/medications/patient/$patientId/day/$selectedDay'),
+          '${Config.baseUrl}/medications/patient/$patientId/day/$selectedDay',
+        ),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -130,29 +79,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> logoutUser(String jwt) async {
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-
-    if (fcmToken == null) {
-      print('⚠️ No FCM token found');
-      return;
-    }
-
-    final response = await http.post(
-      Uri.parse('${Config.baseUrl}/users/remove-token'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $jwt',
-      },
-      body: jsonEncode({'fcmToken': fcmToken}),
-    );
-
-    if (response.statusCode == 200) {
-      print('✅ FCM token removed from server');
-    } else {
-      print('❌ Failed to remove FCM token: ${response.body}');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -183,15 +109,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.person, color: Color(0xFF208686)),
-onPressed: () async {
-  await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => const ProfileScreen()),
-  );
-  fetchMedicationsForDay(); // ירענן את התרופות כשחוזרים
-},
-
+                        icon: const Icon(
+                          Icons.person,
+                          color: Color(0xFF208686),
+                        ),
+                        onPressed: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ProfileScreen(),
+                            ),
+                          );
+                          fetchMedicationsForDay(); // ירענן את התרופות כשחוזרים
+                        },
                       ),
                       const SizedBox(width: 8),
                       Image.asset(
@@ -240,9 +170,11 @@ onPressed: () async {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-
-                        const Icon(Icons.medication,
-                            size: 30, color: Colors.orange),
+                        const Icon(
+                          Icons.medication,
+                          size: 30,
+                          color: Colors.orange,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           '${medications.length}/?',
@@ -274,15 +206,17 @@ onPressed: () async {
               const SizedBox(height: 10),
 
               Expanded(
-                child: medications.isEmpty
-                    ? const Text("No medications for this day.")
-                    : ListView.builder(
-                        itemCount: medications.length,
-                        itemBuilder: (context, index) {
-                          return MedicationCard(
-                              medication: medications[index]);
-                        },
-                      ),
+                child:
+                    medications.isEmpty
+                        ? const Text("No medications for this day.")
+                        : ListView.builder(
+                          itemCount: medications.length,
+                          itemBuilder: (context, index) {
+                            return MedicationCard(
+                              medication: medications[index],
+                            );
+                          },
+                        ),
               ),
             ],
           ),
