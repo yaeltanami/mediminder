@@ -157,12 +157,13 @@ const getPatientsForCaregiver = async (caregiverId) => {
 };
 
 
-const sendCaregiverReminder = async (caregiver, patientUserId, medication) => {
+const sendCaregiverReminder = async (caregiverId, patientUserId, medication) => {
     
     try {
+      const caregiver = await Caregiver.findById(caregiverId);
       const caregiverUser = await User.findById(caregiver.userId);
       if (!caregiverUser || !caregiverUser.fcmToken) {
-        console.warn(`⚠️ Caregiver ${caregiver.userId} has no FCM token`);
+        console.warn(`⚠️ Caregiver ${caregiverId} has no FCM token`);
         return;
       }
       const patient = await User.findById(patientUserId);
@@ -171,9 +172,15 @@ const sendCaregiverReminder = async (caregiver, patientUserId, medication) => {
       const message = {
         token: caregiverUser.fcmToken,
         notification: {
-          title: 'המטופל שלך צריך לקחת תרופה',
-          body: `יש לעקוב אחרי התרופה: ${medication.name}`,
+          title: '\u200EMedication Reminder',
+          body: `\u200E${patient.name} needs to take ${medication.name} now`,
         },
+        android: {
+          notification: {
+            icon: 'notification_icon', // שם הקובץ בלי סיומת (למשל notification_icon.png)
+            color: '#FFCC00' // צהוב בהיר – תואם ללוגו שלך
+          }
+        }, 
         data: {
           action: 'caregiver_reminder',
           patientName: patient.name,
