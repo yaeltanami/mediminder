@@ -108,7 +108,7 @@ const sendMedicationReminders = async () => {
             }
           
           console.log(`🔔 Sending reminder to patient ${patient.userId} for medication: ${medication.name}`);
-          await patientService.sendPatientReminder(patient.userId, medication._id);  
+          await patientService.sendPatientReminder(patient.userId, medication._id, currentHourMinute );  
 
 
           // שליחת תזכורות לכל המטפלים

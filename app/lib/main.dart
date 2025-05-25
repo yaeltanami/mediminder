@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
-import 'services/notifications_service.dart';
 import 'providers/auth_provider.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/home_screen.dart';
@@ -21,6 +20,7 @@ void setupFirebaseMessaging() {
       final medicationId = data['medicationId'];
       final medicationName = data['medicationName'];
       final slotNumber = data['slotNumber'];
+      final timeToTake = data['timeToTake'];
 
       navigatorKey.currentState?.push(
         MaterialPageRoute(
@@ -30,6 +30,7 @@ void setupFirebaseMessaging() {
                 medicationId: medicationId,
                 medicationName: medicationName,
                 slotNumber: slotNumber,
+                timeToTake: timeToTake,
               ),
         ),
       );
@@ -63,6 +64,7 @@ void setupFirebaseMessaging() {
       final medicationId = data['medicationId'];
       final medicationName = data['medicationName'];
       final slotNumber = data['slotNumber'];
+      final timeToTake = data['timeToTake'];
 
       navigatorKey.currentState?.push(
         MaterialPageRoute(
@@ -72,6 +74,7 @@ void setupFirebaseMessaging() {
                 medicationId: medicationId,
                 medicationName: medicationName,
                 slotNumber: slotNumber,
+                timeToTake: timeToTake, 
               ),
         ),
       );

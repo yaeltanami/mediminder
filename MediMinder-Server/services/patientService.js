@@ -48,7 +48,7 @@ const registerPatient = async ({ name, email, password, birthDate, caregivers}) 
  * @param {string} userId - The patient's ID
  * @param {string} medicationId - The medication's ID
  */
-const sendPatientReminder = async (userId, medicationId) => {
+const sendPatientReminder = async (userId, medicationId, currentHourMinute) => {
     try {  
       const user = await User.findById(userId);
       if (!user) {
@@ -82,6 +82,7 @@ const sendPatientReminder = async (userId, medicationId) => {
           medicationId: medication._id.toString(),
           medicationName: medication.name,
           slotNumber: medication.slotNumber.toString(),
+          timeToTake: currentHourMinute,
         }
       };
 
