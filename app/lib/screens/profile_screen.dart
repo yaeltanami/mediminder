@@ -74,7 +74,7 @@ class ProfileScreen extends StatelessWidget {
                         color: Color(0xFF208686),
                       ),
                       const SizedBox(width: 8),
-                      Text("Name: $name", style: const TextStyle(fontSize: 22)),
+                      Text("$name", style: const TextStyle(fontSize: 22)),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -88,7 +88,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "Email: $email",
+                        "$email",
                         style: const TextStyle(fontSize: 22),
                       ),
                     ],
@@ -103,7 +103,7 @@ class ProfileScreen extends StatelessWidget {
                         color: Color(0xFF208686),
                       ),
                       const SizedBox(width: 8),
-                      Text("Age: $age", style: const TextStyle(fontSize: 22)),
+                      Text("$age", style: const TextStyle(fontSize: 22)),
                     ],
                   ),
 

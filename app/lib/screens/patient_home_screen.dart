@@ -43,6 +43,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           ][DateTime.now().weekday - 1];
 
   List<dynamic> medications = []; // רשימת התרופות שנשלפות מהשרת
+  List<dynamic> takenLogs = [];
+  int totalIntakeCount = 0;
 
   @override
   @override
@@ -52,33 +54,75 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     fetchMedicationsForDay();
   }
 
+  bool _isFirstTime = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isFirstTime) {
+      _isFirstTime = false;
+      return; // לא לרוץ בפעם הראשונה כי זה כבר קורה ב-initState
+    }
+    fetchMedicationsForDay(); // ירענן כשחוזרים ממסך אחר
+  }
+
   Future<void> fetchMedicationsForDay() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final patientId = authProvider.role?['_id'];
     final token = authProvider.token;
+    final date = DateTime.now().toIso8601String().split('T').first;
 
     if (patientId == null || token == null) return;
 
     try {
-      final response = await http.get(
+      final medsResponse = await http.get(
         Uri.parse(
           '${Config.baseUrl}/medications/patient/$patientId/day/$selectedDay',
         ),
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      if (response.statusCode == 200) {
-        setState(() {
-          medications = jsonDecode(response.body);
-        });
-      } else {
-        print('❌ Failed to load medications');
+      final logsResponse = await http.get(
+        Uri.parse('${Config.baseUrl}/medicationLog/$patientId/$date'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (medsResponse.statusCode == 200) {
+        final medsData = jsonDecode(medsResponse.body);
+        if (mounted) {
+          setState(() {
+            medications = medsData['medications'];
+            totalIntakeCount = medsData['totalIntakeCount'];
+          });
+        }
+      }
+
+      if (logsResponse.statusCode == 200) {
+        if (mounted) {
+          setState(() {
+            takenLogs = jsonDecode(logsResponse.body);
+          });
+        }
       }
     } catch (e) {
-      print('❌ Error fetching medications: $e');
+      print('❌ Error fetching medications or logs: $e');
     }
   }
 
+  bool isTodaySelected() {
+    final today =
+        DateTime.now().weekday == 7
+            ? 'Sunday'
+            : [
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+              'Friday',
+              'Saturday',
+            ][DateTime.now().weekday - 1];
+
+    return selectedDay == today;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,15 +204,24 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
               Center(
                 child: Container(
-                  width: 150,
-                  height: 150,
+                  width: 180,
+                  height: 180,
                   decoration: BoxDecoration(
                     color: mainColor.withOpacity(0.1),
                     shape: BoxShape.circle,
+                    border:
+                        (isTodaySelected() &&
+                                takenLogs.length == totalIntakeCount)
+                            ? Border.all(color: Colors.green, width: 8)
+                            : null,
                   ),
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.center, // 🟢 הוספה חשובה!
+
                       children: [
                         const Icon(
                           Icons.medication,
@@ -176,35 +229,70 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                           color: Colors.orange,
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          '${medications.length}/?',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: mainColor,
-                          ),
-                        ),
+                        isTodaySelected()
+                            ? Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Taken',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal,
+                                    color: mainColor,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${takenLogs.length}/${totalIntakeCount}',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: mainColor,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            )
+                            : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '$totalIntakeCount',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: mainColor,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'medications',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal,
+                                    color: mainColor,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+
                         const SizedBox(height: 4),
-                        Text(
-                          selectedDay,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
                       ],
                     ),
                   ),
                 ),
               ),
+
               const SizedBox(height: 32),
 
-              const Text(
-                'Medications for selected day:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              //  Text(
+              //   'My Medications for $selectedDay',
+              //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              // ),
               const SizedBox(height: 10),
-
               Expanded(
                 child:
                     medications.isEmpty

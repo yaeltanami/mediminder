@@ -100,7 +100,7 @@ Future<void> fetchPatients() async {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    final mainColor = const Color(0xFF208686);
+        final mainColor = const Color(0xFF208686);
     final username = auth.user?['name'] ?? "Caregiver";
 
 
