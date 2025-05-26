@@ -31,6 +31,8 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     super.initState();
     fetchPatients();
   }
+  
+
 
 Future<void> fetchPatients() async {
   final auth = Provider.of<AuthProvider>(context, listen: false);
@@ -124,14 +126,20 @@ Future<void> fetchPatients() async {
         const Spacer(),
         IconButton(
           icon: const Icon(Icons.person, color: Color(0xFF208686)),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const CaregiverProfileScreen(),
-              ),
-            );
-          },
+onPressed: () async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const CaregiverProfileScreen(),
+    ),
+  );
+  await fetchPatients(); // רענון הנתונים לאחר החזרה מהפרופיל
+  // אם כבר נבחר מטופל, רענני גם את התרופות
+  if (selectedPatient != null) {
+    await fetchMedicationsForPatient();
+  }
+},
+
         ),
         const SizedBox(width: 4),
         Image.asset(

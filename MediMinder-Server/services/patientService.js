@@ -156,4 +156,4 @@ const getPatientByEmail = async (email) => {
 };
 
 
-module.exports = { registerPatient, sendPatientReminder, getCaregiversNamesForPatient: getCaregiversNamesForPatient, findByUserId, getPatientByEmail, getCaregiversForPatient};
+module.exports = { registerPatient, sendPatientReminder, getCaregiversNamesForPatient, findByUserId, getPatientByEmail, getCaregiversForPatient};

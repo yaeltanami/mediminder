@@ -1,4 +1,5 @@
 const caregiverService = require('../services/caregiverService');
+const Caregiver = require('../models/caregiverModel');
 
 /**
  * בקר לרישום מטפל חדש
@@ -26,14 +27,37 @@ const registerCaregiver = async (req, res) => {
 /**
  * בקר להוספת מטופל למטפל
  */
+// const addCaregiverToPatient = async (req, res) => {
+//     try {
+//         const { caregiverId, patientId } = req.body;
+//         const response = await caregiverService.addCaregiverToPatient(caregiverId, patientId);
+//         res.status(200).json(response);
+//     } catch (error) {
+//         res.status(400).json({ message: error.message });
+//     }
+// };
+// controllers/caregiverController.js
 const addCaregiverToPatient = async (req, res) => {
-    try {
-        const { caregiverId, patientId } = req.body;
-        const response = await caregiverService.addCaregiverToPatient(caregiverId, patientId);
-        res.status(200).json(response);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+  try {
+    const { caregiverId, patientId } = req.body;
+    
+    if (!caregiverId || !patientId) {
+      return res.status(400).json({ message: 'Missing caregiverId or patientId' });
     }
+
+    // הוספת המטופל לרשימת המטופלים של המטפל
+    await Caregiver.findByIdAndUpdate(
+      caregiverId,
+      { $addToSet: { patients: patientId } },
+      { new: true }
+    );
+    await caregiverService.addCaregiverToPatient(caregiverId, patientId);
+    
+
+    res.status(200).json({ message: 'Patient added successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
 };
 
 /**

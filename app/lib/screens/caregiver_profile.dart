@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-import '../config.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
-import 'medications_management_screen.dart';
+import '../services/notifications_service.dart';
+import '../widgets/caregiver_actions.dart';
+import 'package:http/http.dart' as http;
+import '../config.dart';
+import 'dart:convert';
+
+
+
+
 
 class CaregiverProfileScreen extends StatefulWidget {
   const CaregiverProfileScreen({super.key});
@@ -16,7 +20,6 @@ class CaregiverProfileScreen extends StatefulWidget {
 }
 
 class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
-  final TextEditingController _emailController = TextEditingController();
   List<Map<String, dynamic>> patients = [];
 
   @override
@@ -24,6 +27,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     super.initState();
     fetchPatients();
   }
+  
 
   Future<void> fetchPatients() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
@@ -33,14 +37,13 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     if (caregiverId == null || token == null) return;
 
     final response = await http.get(
-      Uri.parse('${Config.baseUrl}/caregivers/$caregiverId/patients'),
+      Uri.parse('${Config.baseUrl}/caregivers/patients/$caregiverId'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
       final List<dynamic> patientList = jsonDecode(response.body);
 
-      // טוען את שמות המטופלים
       final List<Map<String, dynamic>> enriched = [];
       for (var p in patientList) {
         final patientId = p['_id'];
@@ -60,62 +63,6 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     }
   }
 
-  Future<void> _addPatientByEmail() async {
-    final email = _emailController.text.trim();
-    if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter patient email")),
-      );
-      return;
-    }
-
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final caregiverId = auth.role?['_id'];
-    final token = auth.token;
-
-    try {
-      final findResponse = await http.get(
-        Uri.parse('${Config.baseUrl}/patients/by-email?email=$email'),
-      );
-
-      if (findResponse.statusCode != 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("❌ Patient not found")),
-        );
-        return;
-      }
-
-      final patientData = jsonDecode(findResponse.body);
-      final patientId = patientData['_id'];
-
-      final addResponse = await http.post(
-        Uri.parse('${Config.baseUrl}/caregivers/$caregiverId/add-patient'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({'patientId': patientId}),
-      );
-
-      if (addResponse.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("✅ Patient added successfully")),
-        );
-        _emailController.clear();
-        fetchPatients(); // רענון
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("⚠️ Failed to add patient")),
-        );
-      }
-    } catch (e) {
-      print("Error adding patient: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("An error occurred")),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final mainColor = const Color(0xFF208686);
@@ -128,7 +75,6 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Caregiver Profile', style: TextStyle(color: Color(0xFF208686))),
         iconTheme: const IconThemeData(color: Color(0xFF208686)),
         actions: [
           Padding(
@@ -145,51 +91,85 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Name: $name", style: const TextStyle(fontSize: 20)),
-                  const SizedBox(height: 10),
-                  Text("Email: $email", style: const TextStyle(fontSize: 20)),
-                  const SizedBox(height: 30),
-                  const Text("My Patients:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-
-                  ...patients.map((p) => Card(
-                        child: ListTile(
-                          title: Text(p['name']),
-                          trailing: TextButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => MedicationsManagementScreen(patientId: p['_id']),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.edit, size: 18),
-                            label: const Text("Edit Medications"),
-                          ),
-                        ),
-                      )),
-
-                  const SizedBox(height: 30),
-                  const Text("Add Patient by Email:", style: TextStyle(fontSize: 18)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 20),
                   Row(
                     children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(
-                            labelText: 'Patient Email',
-                            border: OutlineInputBorder(),
+                      const Icon(Icons.person, color: Color(0xFF208686), size: 28),
+                      const SizedBox(width: 10),
+                      Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Icon(Icons.email, color: Color(0xFF208686), size: 26),
+                      const SizedBox(width: 10),
+                      Text(email, style: const TextStyle(fontSize: 20)),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+                  const Text("My Patients", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: patients.length,
+                    itemBuilder: (context, index) {
+                      final p = patients[index];
+                      return Card(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        elevation: 3,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          child: Row(
+                            children: [
+                              const CircleAvatar(
+                                radius: 28,
+                                backgroundColor: Color(0xFF208686),
+                                child: Icon(Icons.person, color: Colors.white, size: 30),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(
+                                  p['name'],
+                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Color(0xFF208686)),
+                                    tooltip: 'Edit options',
+                                    onPressed: () => showPatientActionsDialog(
+                                      context: context,
+                                      patient: p,
+                                      fetchPatients: fetchPatients,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF208686),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       ),
-                      const SizedBox(width: 10),
-                      IconButton(
-                        icon: const Icon(Icons.add, color: Color(0xFF208686)),
-                        onPressed: _addPatientByEmail,
-                      )
-                    ],
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      label: const Text("Add Patient", style: TextStyle(color: Colors.white)),
+                      onPressed: () => showAddPatientDialog(
+                        context: context,
+                        fetchPatients: fetchPatients,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -205,8 +185,10 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
               ),
-              onPressed: () {
-                Provider.of<AuthProvider>(context, listen: false).logout();
+              onPressed: () async {
+                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                await NotificationsService.logoutUser(authProvider.token!);
+                authProvider.logout();
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                   (route) => false,
