@@ -141,7 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: TextFormField(
                     controller: field.controller,
                     decoration: InputDecoration(
-                      labelText: 'Patient Email ${index + 1}',
+                    labelText: "Your patient's email",
                       border: const OutlineInputBorder(),
                       suffixIcon: field.isValid == true
                           ? const Icon(Icons.check_circle, color: Colors.green)
