@@ -62,42 +62,63 @@ void showPatientActionsDialog({
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => MedicationsManagementScreen(patientId: patient['_id']),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MedicationsManagementScreen(patientId: patient['_id']),
+                        ),
+                      ).then((_) => fetchPatients());
+                    },
+                    icon: const Icon(Icons.medication, color: Colors.white),
+                    label: const Text("Edit", style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF208686),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
                 ),
-              ).then((_) => fetchPatients());
-            },
-            icon: const Icon(Icons.medication),
-            label: const Text("Edit Medications"),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF208686)),
-          ),
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            onPressed: () async {
-              Navigator.pop(context);
-              await removePatient(context: context, patientId: patient['_id']);
-              fetchPatients();
-            },
-            icon: const Icon(Icons.delete),
-            label: const Text("Delete"),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      await removePatient(context: context, patientId: patient['_id']);
+                      fetchPatients();
+                    },
+                    icon: const Icon(Icons.delete, color: Colors.white),
+                    label: const Text("Delete", style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF208686),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
+          child: const Text("Cancel", style: TextStyle(color: Color(0xFF208686))),
         ),
       ],
     ),
   );
 }
+
 
 void showAddPatientDialog({
   required BuildContext context,

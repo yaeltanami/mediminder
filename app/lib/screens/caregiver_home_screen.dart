@@ -93,21 +93,23 @@ Future<void> fetchPatients() async {
     );
 
     if (response.statusCode == 200) {
-      setState(() {
-        medications = jsonDecode(response.body);
-      });
+final data = jsonDecode(response.body);
+setState(() {
+  medications = data['medications'];
+});
+  
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context, listen: false);
-        final mainColor = const Color(0xFF208686);
+    final mainColor = const Color(0xFF208686);
     final username = auth.user?['name'] ?? "Caregiver";
 
 
     return Scaffold(
-  backgroundColor: const Color(0xFFCEEAF5),
+    backgroundColor: const Color.fromARGB(255, 230, 241, 244),
     appBar: AppBar(
     backgroundColor: Colors.transparent,
     elevation: 0,
@@ -124,23 +126,42 @@ Future<void> fetchPatients() async {
           ),
         ),
         const Spacer(),
-        IconButton(
-          icon: const Icon(Icons.person, color: Color(0xFF208686)),
-onPressed: () async {
-  await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => const CaregiverProfileScreen(),
+  Container(
+  width: 30,
+  height: 30,
+  decoration: BoxDecoration(
+    shape: BoxShape.circle,
+    color: Color(0xFFB2D8D8), // צבע טורקיז בהיר-כהה, את יכולה לשנות לפי טעמך
+    border: Border.all(
+      color: Color(0xFF208686),
+      width: 1,
     ),
-  );
-  await fetchPatients(); // רענון הנתונים לאחר החזרה מהפרופיל
-  // אם כבר נבחר מטופל, רענני גם את התרופות
-  if (selectedPatient != null) {
-    await fetchMedicationsForPatient();
-  }
-},
+  ),
+  child: Center(
+    child: GestureDetector(
+      onTap: () async {
+        selectedPatient = null;
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const CaregiverProfileScreen(),
+          ),
+        );
+        await fetchPatients();
+        
+        if (selectedPatient != null) {
+          await fetchMedicationsForPatient();
+        }
+      },
+      child: const Icon(
+        Icons.person,
+        size: 18,
+        color: Color(0xFF208686),
+      ),
+    ),
+  ),
+),
 
-        ),
         const SizedBox(width: 4),
         Image.asset(
           'assets/images/welcome.png',
@@ -186,10 +207,6 @@ onPressed: () async {
                   },
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  'Medications for ${selectedPatient['name']} on $selectedDay:',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
                 const SizedBox(height: 10),
                 Expanded(
                   child: medications.isEmpty

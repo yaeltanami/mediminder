@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final Color mainColor = const Color.fromARGB(255, 32, 134, 134);
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 206, 236, 245),
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
