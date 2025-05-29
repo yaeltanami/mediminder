@@ -13,11 +13,6 @@ import 'welcome_screen.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-/// מסך הבית הראשי של האפליקציה.
-///
-/// מציג למשתמש את שם המשתמש המחובר, מאפשר לבחור יום בשבוע,
-/// ומציג את כל התרופות שעליו לקחת באותו היום.
-/// בנוסף ניתן להוסיף תרופה חדשה דרך כפתור הפלוס.
 
 import 'profile_screen.dart';
 
@@ -131,7 +126,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     final username = authProvider.user?['name'] ?? "Guest";
     final Color mainColor = const Color.fromARGB(255, 32, 134, 134);
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 206, 236, 245),
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -152,21 +147,38 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                   ),
                   Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.person,
-                          color: Color(0xFF208686),
-                        ),
-                        onPressed: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ProfileScreen(),
-                            ),
-                          );
-                          fetchMedicationsForDay(); // ירענן את התרופות כשחוזרים
-                        },
-                      ),
+  Container(
+  width: 35,
+  height: 35,
+  decoration: BoxDecoration(
+    shape: BoxShape.circle,
+    color: Color(0xFFB2D8D8), // צבע רקע כהה עדין
+    border: Border.all(
+      color: Color(0xFF208686),
+      width: 1,
+    ),
+  ),
+  child: Center(
+    child: GestureDetector(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const ProfileScreen(),
+          ),
+        );
+        fetchMedicationsForDay();
+      },
+      child: const Icon(
+        Icons.person,
+        size: 20,
+        color: Color(0xFF208686),
+      ),
+    ),
+  ),
+),
+
+
                       const SizedBox(width: 8),
                       Image.asset(
                         'assets/images/welcome.png',

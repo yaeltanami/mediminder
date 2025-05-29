@@ -17,7 +17,7 @@ class CaregiverReminderScreen extends StatelessWidget {
     final mainColor = const Color(0xFF208686);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFCEECF5),
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

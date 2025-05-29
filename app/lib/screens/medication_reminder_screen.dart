@@ -67,7 +67,7 @@ class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
     final Color mainColor = const Color.fromARGB(255, 32, 134, 134);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFCEECF5),
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

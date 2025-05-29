@@ -6,8 +6,8 @@ import '../providers/auth_provider.dart';
 import '../config.dart'; // קובץ שמחזיק את כתובת ה-API
 
 class AddMedicationScreen extends StatefulWidget {
-  const AddMedicationScreen({super.key});
-
+final String? patientId;
+const AddMedicationScreen({this.patientId, super.key});
   @override
   State<AddMedicationScreen> createState() => _AddMedicationScreenState();
 }
@@ -65,7 +65,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     final String? token = authProvider.token;
     // final String? userId = authProvider.user?['_id'];
 
-    final String? patientId = authProvider.role?['_id'];
+    final patientId = widget.patientId ?? authProvider.role?['_id'];
 
     if (patientId == null || token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -175,7 +175,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFCEECF5),
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -216,36 +216,39 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
               ),
               const SizedBox(height: 8),
               Column(
-                children:
-                    _times.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: _buildTimeField(
-                              _times[index]['time'],
-                              (value) => _times[index]['time'] = value,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildNumberField(
-                              _times[index]['pillsCount'],
-                              (value) => _times[index]['pillsCount'] = value,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              setState(() {
-                                _times.removeAt(index);
-                              });
-                            },
-                          ),
-                        ],
-                      );
-                    }).toList(),
-              ),
+  children: _times.asMap().entries.map((entry) {
+    int index = entry.key;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0), // מוסיף רווח בין כל שורה
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildTimeField(
+              _times[index]['time'],
+              (value) => _times[index]['time'] = value,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _buildNumberField(
+              _times[index]['pillsCount'],
+              (value) => _times[index]['pillsCount'] = value,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              setState(() {
+                _times.removeAt(index);
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }).toList(),
+),
+
               const SizedBox(height: 10),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(

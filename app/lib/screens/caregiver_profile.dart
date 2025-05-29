@@ -71,7 +71,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     final email = user?['email'] ?? 'N/A';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFCEECF5),
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

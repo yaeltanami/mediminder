@@ -216,14 +216,10 @@ class _MedicationsManagementScreenState extends State<MedicationsManagementScree
   Widget build(BuildContext context) {
     final mainColor = const Color.fromARGB(255, 32, 134, 134);
     return Scaffold(
-      backgroundColor: const Color(0xFFCEECF5),
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'My Medications',
-          style: TextStyle(color: Color(0xFF208686)),
-        ),
         iconTheme: const IconThemeData(color: Color(0xFF208686)),
         actions: [
           Padding(
@@ -260,7 +256,8 @@ class _MedicationsManagementScreenState extends State<MedicationsManagementScree
           onPressed: () async {
             await Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const AddMedicationScreen()),
+              MaterialPageRoute(builder: (_) => AddMedicationScreen(patientId: widget.patientId),
+),
             );
             fetchMedications();
           },

@@ -13,7 +13,7 @@ class WelcomeScreen extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 206, 236, 245), // תכלת בהיר
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244), // תכלת בהיר
       body: Stack(
         children: [
           // לוגו מעוגל ללא רקע לבן
