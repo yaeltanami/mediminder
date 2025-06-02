@@ -44,6 +44,25 @@ const addMedication = async (patientId, name, dose, times, days) => {
     }
 };
 
+
+async function getMedicationsForPatientByDay(patientId, day) {
+    try {
+        const medications = await Medication.find({ patientId });
+        const filtered = medications.filter(med => med.days.includes(day));
+          // חישוב כמה פעמים המטופל צריך לקחת תרופות באותו היום
+        const totalIntakeCount = filtered.reduce((sum, med) => {
+        return sum + (med.times?.length || 0);
+        }, 0);
+         return {
+            medications: filtered,
+            totalIntakeCount
+         };
+    } catch (error) {
+        console.error('❌ Error getting medications:', error);
+        throw error;
+    }
+}
+
 /**
  * שליפת כל התרופות של מטופל מסוים.
  *
@@ -52,7 +71,7 @@ const addMedication = async (patientId, name, dose, times, days) => {
  */
 async function getMedicationsForPatient(patientId) {
     try {
-        const medications = await Medication.find({ patientId });
+        const medications = await Medication.find({ patientId });   
         return medications;
     } catch (error) {
         console.error('❌ Error getting medications:', error);
@@ -213,10 +232,11 @@ function isTimeMatching(currentHour, currentMinute, medicationTime) {
 };
 module.exports = {
     addMedication,
-    getMedicationsForPatient,
+    getMedicationsForPatientByDay,
     deleteMedication,
     updateMedication,
     getMedicationById,
     markAsTaken,
     getDueMedicationsStates,
+    getMedicationsForPatient,
 };

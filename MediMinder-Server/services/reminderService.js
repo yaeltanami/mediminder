@@ -108,25 +108,25 @@ const sendMedicationReminders = async () => {
             }
           
           console.log(`🔔 Sending reminder to patient ${patient.userId} for medication: ${medication.name}`);
-          await patientService.sendPatientReminder(patient.userId, medication._id);  
+          await patientService.sendPatientReminder(patient.userId, medication._id, currentHourMinute );  
 
 
           // שליחת תזכורות לכל המטפלים
-          // const caregivers = await patientService.getCaregiversForPatient(patient._id);
-          // if (caregivers && caregivers.length > 0) {
-          //   await Promise.all(
-          //     caregivers.map(caregiver =>
-          //       caregiverService.sendCaregiverReminder(
-          //         caregiver,
-          //         patient.userId,
-          //         medication
-          //       )
-          //     )
-          //   );
-          //   console.log(`📣 Reminder also sent to ${caregivers.length} caregiver(s)`);
-          // } else {
-          //   console.log(`ℹ️ No caregivers found for patient ${patient._id}`);
-          // }
+          const caregiversId = await patientService.getCaregiversForPatient(patient._id);
+          if (caregiversId && caregiversId.length > 0) {
+            await Promise.all(
+              caregiversId.map(caregiver =>
+                caregiverService.sendCaregiverReminder(
+                  caregiver,
+                  patient.userId,
+                  medication
+                )
+              )
+            );
+            console.log(`📣 Reminder also sent to ${caregiversId.length} caregiver(s)`);
+          } else {
+            console.log(`ℹ️ No caregivers found for patient ${patient._id}`);
+          }
           await activateDueMedications(patient._id);
 
       }

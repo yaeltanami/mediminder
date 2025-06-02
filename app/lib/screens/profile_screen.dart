@@ -4,7 +4,6 @@ import '../providers/auth_provider.dart';
 import 'medications_management_screen.dart';
 import 'caregivers_screen.dart';
 import 'login_screen.dart';
-import 'home_screen.dart';
 import '../services/notifications_service.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -33,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
             : 'N/A';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFCEECF5),
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -60,7 +59,7 @@ class ProfileScreen extends StatelessWidget {
                   const Text(
                     "My Profile",
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 35,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF208686),
                     ),
@@ -71,11 +70,11 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.person,
-                        size: 20,
+                        size: 22,
                         color: Color(0xFF208686),
                       ),
                       const SizedBox(width: 8),
-                      Text("Name: $name", style: const TextStyle(fontSize: 22)),
+                      Text("$name", style: const TextStyle(fontSize: 27)),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -84,13 +83,13 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.email,
-                        size: 20,
+                        size: 22,
                         color: Color(0xFF208686),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "Email: $email",
-                        style: const TextStyle(fontSize: 22),
+                        "$email",
+                        style: const TextStyle(fontSize: 27),
                       ),
                     ],
                   ),
@@ -100,21 +99,22 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.cake,
-                        size: 20,
+                        size: 22,
                         color: Color(0xFF208686),
                       ),
                       const SizedBox(width: 8),
-                      Text("Age: $age", style: const TextStyle(fontSize: 22)),
+                      Text("$age", style: const TextStyle(fontSize: 27)),
                     ],
                   ),
 
                   const SizedBox(height: 50),
 
                   ElevatedButton.icon(
-                    icon: const Icon(Icons.medication, color: Colors.white),
+                    icon: const Icon(Icons.medication, size: 22, color: Colors.white),
                     label: const Text(
                       "My Medications",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(                      fontSize: 20,
+color: Colors.white),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: mainColor,
@@ -139,10 +139,11 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   ElevatedButton.icon(
-                    icon: const Icon(Icons.group, color: Colors.white),
+                    icon: const Icon(Icons.group, size: 22, color: Colors.white),
                     label: const Text(
                       "My Caregivers",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(                      fontSize: 20,
+color: Colors.white),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: mainColor,
@@ -170,8 +171,9 @@ class ProfileScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 30),
             child: OutlinedButton.icon(
-              icon: Icon(Icons.logout, color: mainColor),
-              label: Text("Logout", style: TextStyle(color: mainColor)),
+              icon: Icon(Icons.logout, size: 22, color: mainColor),
+              label: Text("Logout", style: TextStyle(                      fontSize: 18,
+color: mainColor)),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: mainColor, width: 2),
                 padding: const EdgeInsets.symmetric(

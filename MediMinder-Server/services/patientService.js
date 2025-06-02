@@ -5,7 +5,7 @@ const userService = require('./userService');
 const pillBoxService = require('./pillBoxService');
 const Medication = require('../models/medicationModel');
 const admin = require('../config/firebase');
-
+const Caregiver = require('../models/caregiverModel');
 /**
  * רישום מטופל חדש ויצירת קופסת תרופות אוטומטית.
  *
@@ -48,7 +48,7 @@ const registerPatient = async ({ name, email, password, birthDate, caregivers}) 
  * @param {string} userId - The patient's ID
  * @param {string} medicationId - The medication's ID
  */
-const sendPatientReminder = async (userId, medicationId) => {
+const sendPatientReminder = async (userId, medicationId, currentHourMinute) => {
     try {  
       const user = await User.findById(userId);
       if (!user) {
@@ -82,6 +82,7 @@ const sendPatientReminder = async (userId, medicationId) => {
           medicationId: medication._id.toString(),
           medicationName: medication.name,
           slotNumber: medication.slotNumber.toString(),
+          timeToTake: currentHourMinute,
         }
       };
 
@@ -139,27 +140,47 @@ const sendLatePatientReminder = async (userId, medicationId) => {
 
 
 /**
- * Retrieves the list of caregiver IDs assigned to a patient.
- *
- * @param {string} patientId - The ID of the patient.
- * @returns {Promise<Array<string>>} - The list of caregiver IDs.
+הפונקציה מחזירה מערך של שם ומייל של המטפלים של משתמש 
  */
-const getCaregiversForPatient = async (patientId) => {
+const getCaregiversNamesForPatient = async (patientId) => {
     try {
         // חיפוש המטופל ושליפת כל המטפלים שלו, אך מחזירים רק את ה-ID
-        const patient = await Patient.findById(patientId).populate('caregivers', '_id');
+        const patient = await Patient.findById(patientId);
 
         if (!patient) {
             throw new Error("Patient not found.");
         }
 
-        // מחזירים רק מערך של מזהי המטפלים
-        return patient.caregivers.map(caregiver => caregiver._id);
+        const caregivers = await Caregiver.find({
+            _id: { $in: patient.caregivers }
+          });
+
+    // שליפת המשתמשים של כל המטפלים
+    const userIds = caregivers.map(c => c.userId);
+    const users = await User.find({ _id: { $in: userIds } }).select('name email');
+
+    return users;
     } catch (error) {
         console.error("❌ Error retrieving caregivers for patient:", error);
         throw error;
     }
 };
+
+/**
+ * מחזירה מערך של מזהי המטפלים של מטופל לפי מזהה המטופל
+ */
+const getCaregiversForPatient = async (patientId) => {
+  try {
+    const patient = await Patient.findById(patientId);
+    if (!patient) throw new Error("Patient not found.");
+
+    return patient.caregivers; // כבר מכיל מזהי Caregiver
+  } catch (error) {
+    console.error("❌ Error retrieving caregiver IDs for patient:", error);
+    throw error;
+  }
+};
+
 
 const findByUserId = async (userId) => {
   return await Patient.findOne({ userId });
@@ -178,4 +199,4 @@ const getPatientByEmail = async (email) => {
 };
 
 
-module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient, findByUserId, getPatientByEmail,sendLatePatientReminder};
+module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient, findByUserId, getPatientByEmail,sendLatePatientReminder, getCaregiversNamesForPatient, getCaregiversForPatient};

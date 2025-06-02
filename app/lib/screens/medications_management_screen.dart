@@ -7,7 +7,8 @@ import '../providers/auth_provider.dart';
 import 'add_medication_screen.dart';
 
 class MedicationsManagementScreen extends StatefulWidget {
-  const MedicationsManagementScreen({super.key});
+  final String? patientId;
+  const MedicationsManagementScreen({this.patientId, super.key});
 
   @override
   State<MedicationsManagementScreen> createState() => _MedicationsManagementScreenState();
@@ -44,7 +45,7 @@ class _MedicationsManagementScreenState extends State<MedicationsManagementScree
 
   Future<void> fetchMedications() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final patientId = authProvider.role?['_id'];
+    final patientId = widget.patientId ?? authProvider.role?['_id'];
     final token = authProvider.token;
 
     if (patientId == null || token == null) return;
@@ -215,14 +216,10 @@ class _MedicationsManagementScreenState extends State<MedicationsManagementScree
   Widget build(BuildContext context) {
     final mainColor = const Color.fromARGB(255, 32, 134, 134);
     return Scaffold(
-      backgroundColor: const Color(0xFFCEECF5),
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'My Medications',
-          style: TextStyle(color: Color(0xFF208686)),
-        ),
         iconTheme: const IconThemeData(color: Color(0xFF208686)),
         actions: [
           Padding(
@@ -259,7 +256,8 @@ class _MedicationsManagementScreenState extends State<MedicationsManagementScree
           onPressed: () async {
             await Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const AddMedicationScreen()),
+              MaterialPageRoute(builder: (_) => AddMedicationScreen(patientId: widget.patientId),
+),
             );
             fetchMedications();
           },

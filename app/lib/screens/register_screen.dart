@@ -141,7 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: TextFormField(
                     controller: field.controller,
                     decoration: InputDecoration(
-                      labelText: 'Patient Email ${index + 1}',
+                    labelText: "Your patient's email",
                       border: const OutlineInputBorder(),
                       suffixIcon: field.isValid == true
                           ? const Icon(Icons.check_circle, color: Colors.green)
@@ -201,7 +201,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 206, 236, 245),
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

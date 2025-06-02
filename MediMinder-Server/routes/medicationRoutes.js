@@ -7,8 +7,7 @@ router.get('/patient/:patientId', medicationController.getMedicationsForPatient)
 router.delete('/delete/:medicationId', medicationController.deleteMedication); 
 router.put('/update/:medicationId', medicationController.updateMedication);
 router.get('/:medicationId', medicationController.getMedicationById);
-
-router.get('/patient/:patientId/day/:day', medicationController.getMedicationsByDay);
+router.get('/patient/:patientId/day/:day', medicationController.getMedicationsForPatientByDay);
 router.post('/medication-taken', medicationController.markMedicationAsTaken);
 
 
