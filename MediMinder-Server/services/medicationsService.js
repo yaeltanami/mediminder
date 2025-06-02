@@ -175,6 +175,11 @@ function isTimeMatching(currentHour, currentMinute, medicationTime) {
   
   const getDueMedicationsStates = async (patientId) => {
     const patient = await Patient.findById(patientId).populate('medications');
+    const pillBox = await PillBox.findOne({ patientId });
+    if (!pillBox) {
+        console.error(`❌ No pillbox found for patient ${patientId}`);
+        return null;
+    }
     const now = new Date();
     const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }); // למשל "Sunday"
     const currentHour = now.getHours();
@@ -203,7 +208,8 @@ function isTimeMatching(currentHour, currentMinute, medicationTime) {
     }
 
     console.log(`📦 Final LED states: ${states.join('')}`);
-    return states.join('');
+    console.log(`🌐 Pillbox IP: ${pillBox.ip}`); 
+    return { states: states.join(''), ip: pillBox.ip };
 };
 module.exports = {
     addMedication,

@@ -22,14 +22,14 @@ app.listen(PORT, () => {
     console.log("JWT_SECRET:", process.env.JWT_SECRET);
     
   
-    // כאן מתבצעת שליחה אוטומטית של פקודת הדלקה ל-ESP כשהשרת עולה
-    sendLedCommand("10000")
-      .then((result) => {
-        console.log("✅ ESP command sent on startup:", result);
-      })
-      .catch((err) => {
-        console.error("❌ Failed to send command to ESP on startup:", err.message);
-      });
+    // // כאן מתבצעת שליחה אוטומטית של פקודת הדלקה ל-ESP כשהשרת עולה
+    // sendLedCommand("10000")
+    //   .then((result) => {
+    //     console.log("✅ ESP command sent on startup:", result);
+    //   })
+    //   .catch((err) => {
+    //     console.error("❌ Failed to send command to ESP on startup:", err.message);
+    //   });
       
   });
   
