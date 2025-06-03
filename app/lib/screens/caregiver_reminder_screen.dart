@@ -2,22 +2,20 @@ import 'package:flutter/material.dart';
 
 class CaregiverReminderScreen extends StatelessWidget {
   final String patientName;
-  final String medicationId;
-  final String medicationName;
+  final List<Map<String, dynamic>> medications;
 
   const CaregiverReminderScreen({
-    super.key,
+    Key? key,
     required this.patientName,
-    required this.medicationId,
-    required this.medicationName,
-  });
+    required this.medications,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final mainColor = const Color(0xFF208686);
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 230, 241, 244),
+      backgroundColor: const Color(0xFFE6F1F4),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -34,37 +32,56 @@ class CaregiverReminderScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.group, size: 80, color: Color(0xFF208686)),
-            const SizedBox(height: 24),
+            const SizedBox(height: 30),
+            Image.asset('assets/images/welcome.png', width: 140, height: 140),
+            const SizedBox(height: 30),
             Text(
-              'Your patient ${patientName} needs to take:',
+             'Time to check on your patient',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
                 color: mainColor,
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              medicationName,
+              '${patientName} needs to take',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: medications.length,
+                itemBuilder: (context, index) {
+                  final med = medications[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: ListTile(
+                      leading: const Icon(Icons.medication, color: Color(0xFF208686)),
+                      title: Text(med['medicationName'] ?? ''),
+                      subtitle: Text('Slot: ${med['slotNumber'] ?? ''}'),
+                    ),
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 40),
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: const Icon(Icons.done),
-              label: const Text('Got it'),
+              icon: const Icon(Icons.check_circle_outline),
+              label: const Text('Checked In'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: mainColor,
+                backgroundColor: Colors.white,
+                foregroundColor: mainColor,
                 minimumSize: const Size.fromHeight(50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
+                  side: BorderSide(color: mainColor, width: 2),
                 ),
                 textStyle: const TextStyle(
                   fontSize: 18,

@@ -191,7 +191,7 @@ color: mainColor)),
                 );
                 await NotificationsService.logoutUser(
                   authProvider.token!,
-                ); // הוספת !
+                );
                 authProvider.logout();
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
