@@ -141,6 +141,56 @@ const sendPatientReminder = async (user, medications, currentHourMinute) => {
   }
 };
 
+      const response = await admin.messaging().send(message);
+      console.log(`📢 התראה נשלחה למשתמש ${user._id}: ${medication.name}`);
+    } catch (error) {
+      console.error('❌ Error sending reminder to patient:', error);
+    }
+  };
+  
+const sendLatePatientReminder = async (userId, medicationId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      console.error(`❌ User for patient ${userId} not found.`);
+      return;
+    }
+    if (!user.fcmToken) {
+      console.warn(`⚠️ User ${user._id} has no FCM token.`);
+      return;
+    }
+    const medication = await Medication.findById(medicationId);
+    if (!medication) {
+      console.error(`❌ Medication with ID ${medicationId} not found.`);
+      return;
+    }
+    const message = {
+      token: user.fcmToken,
+      notification: {
+        title: '⚠️ Reminder: Medication not taken!',
+        body: `Please remember to take: ${medication.name}`,
+      },
+      android: {
+        notification: {
+          icon: 'notification_icon',
+          color: '#FF0000' // אדום - כי זו התראה דחופה
+        }
+      },
+      data: {
+        action: 'late_medication_alert',
+        userId: user._id.toString(),
+        medicationId: medication._id.toString(),
+        medicationName: medication.name,
+        slotNumber: medication.slotNumber.toString(),
+      }
+    };
+    const response = await admin.messaging().send(message);
+    console.log(`🚨 Late reminder sent to patient ${user._id} for ${medication.name}`);
+  } catch (error) {
+    console.error('❌ Error sending late reminder to patient:', error);
+  }
+};
+
 
 /**
 הפונקציה מחזירה מערך של שם ומייל של המטפלים של משתמש 
@@ -202,4 +252,4 @@ const getPatientByEmail = async (email) => {
 };
 
 
-module.exports = { registerPatient, getCaregiversNamesForPatient, findByUserId, getPatientByEmail, getCaregiversForPatient, sendPatientReminder};
+module.exports = { registerPatient, sendPatientReminder, getCaregiversForPatient, findByUserId, getPatientByEmail,sendLatePatientReminder, getCaregiversNamesForPatient, getCaregiversForPatient};
