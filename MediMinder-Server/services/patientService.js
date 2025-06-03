@@ -140,13 +140,6 @@ const sendPatientReminder = async (user, medications, currentHourMinute) => {
     console.error('❌ Error sending combined medication reminder:', err);
   }
 };
-
-      const response = await admin.messaging().send(message);
-      console.log(`📢 התראה נשלחה למשתמש ${user._id}: ${medication.name}`);
-    } catch (error) {
-      console.error('❌ Error sending reminder to patient:', error);
-    }
-  };
   
 const sendLatePatientReminder = async (userId, medicationId) => {
   try {

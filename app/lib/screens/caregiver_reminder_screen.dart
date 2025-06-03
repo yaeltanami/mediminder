@@ -47,7 +47,7 @@ class CaregiverReminderScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              '${patientName} needs to take',
+               "Make sure $patientName took their medications",
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
@@ -69,27 +69,27 @@ class CaregiverReminderScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 40),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: const Icon(Icons.check_circle_outline),
-              label: const Text('Checked In'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: mainColor,
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  side: BorderSide(color: mainColor, width: 2),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Urbanist',
-                ),
-              ),
-            ),
+            // ElevatedButton.icon(
+            //   onPressed: () {
+            //     Navigator.pop(context);
+            //   },
+            //   icon: const Icon(Icons.check_circle_outline),
+            //   label: const Text('Checked In'),
+            //   style: ElevatedButton.styleFrom(
+            //     backgroundColor: Colors.white,
+            //     foregroundColor: mainColor,
+            //     minimumSize: const Size.fromHeight(50),
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(30),
+            //       side: BorderSide(color: mainColor, width: 2),
+            //     ),
+            //     textStyle: const TextStyle(
+            //       fontSize: 18,
+            //       fontWeight: FontWeight.bold,
+            //       fontFamily: 'Urbanist',
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
