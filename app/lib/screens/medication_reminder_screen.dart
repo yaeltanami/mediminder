@@ -7,17 +7,14 @@ import 'dart:convert';
 
 class MedicationReminderScreen extends StatefulWidget {
   final String userId;
-  final String medicationId;
-  final String medicationName;
-  final String slotNumber;
+  final List<Map<String, dynamic>> medications;
+
   final String timeToTake;
 
   const MedicationReminderScreen({
     super.key,
     required this.userId,
-    required this.medicationId,
-    required this.medicationName,
-    required this.slotNumber,
+    required this.medications,
     required this.timeToTake,
   });
 
@@ -33,29 +30,29 @@ class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
   Future<void> markAsTaken() async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final response = await http.post(
-        Uri.parse('${Config.baseUrl}/medicationLog/'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'patientId': authProvider.role?['_id'],
-          'medicationId': widget.medicationId,
-          'date':
-              DateTime.now().toIso8601String().split('T').first, // ✅ רק תאריך
-          'time': widget.timeToTake,
-        }),
-      );
+      final patientId = authProvider.role?['_id'];
 
-      if (response.statusCode == 201) {
-        // 🟡 הודעת הצלחה
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Medication logged as taken ✅')),
+      for (final med in widget.medications) {
+        final response = await http.post(
+          Uri.parse('${Config.baseUrl}/medicationLog/'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'patientId': patientId,
+            'medicationId': med['medicationId'],
+            'date': DateTime.now().toIso8601String().split('T').first,
+            'time': widget.timeToTake,
+          }),
         );
-        Navigator.pop(context);
-      } else {
-        throw Exception('Failed to log medication');
+
+        if (response.statusCode != 201) {
+          throw Exception('Failed to log medication ${med['medicationName']}');
+        }
       }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('All medications logged as taken ✅')),
+      );
+      Navigator.pop(context, true); 
     } catch (e) {
-      // 🟡 הודעת שגיאה
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('❌ Error: ${e.toString()}')));
@@ -102,11 +99,23 @@ class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Take ${widget.medicationName}\nfrom slot ${widget.slotNumber}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            Column(
+              children:
+                  widget.medications.map((med) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Text(
+                        ' Take ${med['medicationName']} from slot ${med['slotNumber']}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }).toList(),
             ),
+
             const SizedBox(height: 40),
             ElevatedButton.icon(
               onPressed: markAsTaken,

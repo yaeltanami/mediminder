@@ -7,12 +7,12 @@ import '../providers/auth_provider.dart';
 import '../config.dart';
 import '../widgets/weekday_selector.dart';
 import '../widgets/medication_card.dart';
+import '../navigation_observer.dart';
 
 import 'message.dart';
 import 'welcome_screen.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-
 
 import 'profile_screen.dart';
 
@@ -23,7 +23,7 @@ class PatientHomeScreen extends StatefulWidget {
   State<PatientHomeScreen> createState() => _PatientHomeScreenState();
 }
 
-class _PatientHomeScreenState extends State<PatientHomeScreen> {
+class _PatientHomeScreenState extends State<PatientHomeScreen> with RouteAware {
   // הגדרת היום הנבחר כברירת מחדל (היום הנוכחי)
   String selectedDay =
       DateTime.now().weekday == 7
@@ -49,16 +49,26 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     fetchMedicationsForDay();
   }
 
-  bool _isFirstTime = true;
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_isFirstTime) {
-      _isFirstTime = false;
-      return; // לא לרוץ בפעם הראשונה כי זה כבר קורה ב-initState
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
     }
     fetchMedicationsForDay(); // ירענן כשחוזרים ממסך אחר
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // חוזרים מהמסך הבא למסך הנוכחי => לרענן נתונים
+    fetchMedicationsForDay();
   }
 
   Future<void> fetchMedicationsForDay() async {
@@ -147,37 +157,36 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                   ),
                   Row(
                     children: [
-  Container(
-  width: 35,
-  height: 35,
-  decoration: BoxDecoration(
-    shape: BoxShape.circle,
-    color: Color(0xFFB2D8D8), // צבע רקע כהה עדין
-    border: Border.all(
-      color: Color(0xFF208686),
-      width: 1,
-    ),
-  ),
-  child: Center(
-    child: GestureDetector(
-      onTap: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const ProfileScreen(),
-          ),
-        );
-        fetchMedicationsForDay();
-      },
-      child: const Icon(
-        Icons.person,
-        size: 20,
-        color: Color(0xFF208686),
-      ),
-    ),
-  ),
-),
-
+                      Container(
+                        width: 35,
+                        height: 35,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFB2D8D8), // צבע רקע כהה עדין
+                          border: Border.all(
+                            color: Color(0xFF208686),
+                            width: 1,
+                          ),
+                        ),
+                        child: Center(
+                          child: GestureDetector(
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ProfileScreen(),
+                                ),
+                              );
+                              fetchMedicationsForDay();
+                            },
+                            child: const Icon(
+                              Icons.person,
+                              size: 20,
+                              color: Color(0xFF208686),
+                            ),
+                          ),
+                        ),
+                      ),
 
                       const SizedBox(width: 8),
                       Image.asset(

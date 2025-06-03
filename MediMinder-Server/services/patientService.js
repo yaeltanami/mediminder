@@ -42,51 +42,104 @@ const registerPatient = async ({ name, email, password, birthDate, caregivers}) 
 };
 
 
+// /**
+//  * Sends a reminder notification to a patient to take their medication.
+//  *
+//  * @param {string} userId - The patient's ID
+//  * @param {string} medicationId - The medication's ID
+//  */
+// const sendPatientReminder = async (userId, medicationId, currentHourMinute) => {
+//     try {  
+//       const user = await User.findById(userId);
+//       if (!user) {
+//         console.error(`❌ User for patient ${userId} not found.`);
+//         return;
+//       }
+//       if (!user.fcmToken) {
+//         console.warn(`⚠️ User ${user._id} has no FCM token.`);
+//         return;
+//       }
+//       const medication = await Medication.findById(medicationId);
+//       if (!medication) {
+//         console.error(`❌ Medication with ID ${medicationId} not found.`);
+//         return;
+//       }
+//       const message = {
+//         token: user.fcmToken,
+//         notification: {
+//           title: '\u200EMedication Reminder',
+//           body: `\u200ETime to take: ${medication.name}`,
+//         },
+//         android: {
+//           notification: {
+//             icon: 'notification_icon', // שם הקובץ בלי סיומת (למשל notification_icon.png)
+//             color: '#FFCC00' // צהוב בהיר – תואם ללוגו שלך
+//           }
+//         },
+//         data: {
+//           action: 'medication_reminder',
+//           userId: user._id.toString(),
+//           medicationId: medication._id.toString(),
+//           medicationName: medication.name,
+//           slotNumber: medication.slotNumber.toString(),
+//           timeToTake: currentHourMinute,
+//         }
+//       };
+//       const response = await admin.messaging().send(message);
+//       console.log(`📢 התראה נשלחה למשתמש ${user._id}: ${medication.name}`);
+//     } catch (error) {
+//       console.error('❌ Error sending reminder to patient:', error);
+//     }
+//   };
+  
 /**
- * Sends a reminder notification to a patient to take their medication.
- *
- * @param {string} userId - The patient's ID
- * @param {string} medicationId - The medication's ID
+ * Sends a combined reminder to a user for multiple medications at once.
+ * @param {User} user
+ * @param {Array} medications
+ * @param {string} currentHourMinute
  */
-const sendPatientReminder = async (userId, medicationId, currentHourMinute) => {
-    try {  
-      const user = await User.findById(userId);
-      if (!user) {
-        console.error(`❌ User for patient ${userId} not found.`);
-        return;
-      }
-      if (!user.fcmToken) {
-        console.warn(`⚠️ User ${user._id} has no FCM token.`);
-        return;
-      }
-      const medication = await Medication.findById(medicationId);
-      if (!medication) {
-        console.error(`❌ Medication with ID ${medicationId} not found.`);
-        return;
-      }
-      const message = {
-        token: user.fcmToken,
+const sendPatientReminder = async (user, medications, currentHourMinute) => {
+  try {
+    if (!user?.fcmToken) {
+      console.warn(`⚠️ No FCM token for user ${user._id}`);
+      return;
+    }
+
+// יוצרים מחרוזת אחת שמכילה את שמות כל התרופות, מופרדות בפסיקים (לכותרת ההתראה)
+    const medNames = medications.map(med => med.name).join(', ');
+    // יוצרים מערך חדש של אובייקטים שמכילים מידע בסיסי על כל תרופה
+    const medData = medications.map(med => ({
+      medicationId: med._id.toString(),
+      medicationName: med.name,
+      slotNumber: med.slotNumber?.toString() || ''
+    }));
+
+    const message = {
+      token: user.fcmToken,
+      notification: {
+        title: '\u200EMedication Reminder',
+        body: `\u200ETime to take: ${medNames}`,
+      },
+      android: {
         notification: {
-          title: '\u200EMedication Reminder',
-          body: `\u200ETime to take: ${medication.name}`,
-        },
-        android: {
-          notification: {
-            icon: 'notification_icon', // שם הקובץ בלי סיומת (למשל notification_icon.png)
-            color: '#FFCC00' // צהוב בהיר – תואם ללוגו שלך
-          }
-        },
-        data: {
-          action: 'medication_reminder',
-          userId: user._id.toString(),
-          medicationId: medication._id.toString(),
-          medicationName: medication.name,
-          slotNumber: medication.slotNumber.toString(),
-          timeToTake: currentHourMinute,
+          icon: 'notification_icon',
+          color: '#FFCC00'
         }
-      };
+      },
+      data: {
+        action: 'medication_reminder',
+        userId: user._id.toString(),
+        timeToTake: currentHourMinute,
+        medications: JSON.stringify(medData)
+      }
+    };
 
-
+    const response = await admin.messaging().send(message);
+    console.log(`📢 תזכורת מרוכזת נשלחה ל-${user.name} לתרופות: ${medNames}`);
+  } catch (err) {
+    console.error('❌ Error sending combined medication reminder:', err);
+  }
+};
 
       const response = await admin.messaging().send(message);
       console.log(`📢 התראה נשלחה למשתמש ${user._id}: ${medication.name}`);
