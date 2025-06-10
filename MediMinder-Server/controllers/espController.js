@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { esp32Ip } = require('../config/espConfig'); 
 const { getDueMedicationsStates } = require('../services/medicationsService');
 const { sendLatePatientReminder } = require('../services/patientService');
 const PillBox = require('../models/pillBoxModel');
@@ -31,7 +30,7 @@ const reportMedicationTaken = (req, res) => {
   const { slotNumber, timestamp } = req.body;
   console.log(`💊 Medication taken in slot ${slotNumber} at ${timestamp}`);
   
-  // כאן בעתיד אפשר לעדכן DB, לשלוח התראה וכו'
+  // פה להוסיך את העדכונים של דוס
   res.status(200).json({ message: 'Medication taken received successfully' });
 };
 
