@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { esp32Ip } = require('../config/espConfig'); 
 const { getDueMedicationsStates } = require('../services/medicationsService');
 const { sendLatePatientReminder } = require('../services/patientService');
 const PillBox = require('../models/pillBoxModel');

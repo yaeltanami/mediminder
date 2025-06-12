@@ -55,12 +55,10 @@ class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 80), // ⬅️ כאן שולטים כמה נמוך להתחיל
-            // 🖼️ תמונה
             Image.asset('assets/images/welcome.png', width: 140, height: 140),
 
             const SizedBox(height: 20),
 
-            // 📝 כותרת
             Text(
               'Time to take your medication!',
               textAlign: TextAlign.center,
@@ -73,7 +71,6 @@ class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
 
             const SizedBox(height: 16),
 
-            // 💊 רשימת התרופות
             Column(
               children:
                   widget.medications.map((med) {
