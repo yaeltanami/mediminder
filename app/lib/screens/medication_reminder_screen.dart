@@ -8,7 +8,6 @@ import 'dart:convert';
 class MedicationReminderScreen extends StatefulWidget {
   final String userId;
   final List<Map<String, dynamic>> medications;
-
   final String timeToTake;
 
   const MedicationReminderScreen({
@@ -25,39 +24,6 @@ class MedicationReminderScreen extends StatefulWidget {
 
 class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
   final Color mainColor = const Color(0xFF208686);
-
-  // 🟡 פונקציה חדשה ששולחת את הלוג לשרת
-  Future<void> markAsTaken() async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final patientId = authProvider.role?['_id'];
-
-      for (final med in widget.medications) {
-        final response = await http.post(
-          Uri.parse('${Config.baseUrl}/medicationLog/'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'patientId': patientId,
-            'medicationId': med['medicationId'],
-            'date': DateTime.now().toIso8601String().split('T').first,
-            'time': widget.timeToTake,
-          }),
-        );
-
-        if (response.statusCode != 201) {
-          throw Exception('Failed to log medication ${med['medicationName']}');
-        }
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All medications logged as taken ✅')),
-      );
-      Navigator.pop(context, true); 
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('❌ Error: ${e.toString()}')));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,10 +51,16 @@ class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.start, // מתחילים מהחלק העליון
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 30),
+            const SizedBox(height: 80), // ⬅️ כאן שולטים כמה נמוך להתחיל
+            // 🖼️ תמונה
             Image.asset('assets/images/welcome.png', width: 140, height: 140),
-            const SizedBox(height: 30),
+
+            const SizedBox(height: 20),
+
+            // 📝 כותרת
             Text(
               'Time to take your medication!',
               textAlign: TextAlign.center,
@@ -98,14 +70,17 @@ class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
                 color: mainColor,
               ),
             ),
+
             const SizedBox(height: 16),
+
+            // 💊 רשימת התרופות
             Column(
               children:
                   widget.medications.map((med) {
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Text(
-                        ' Take ${med['medicationName']} from slot ${med['slotNumber']}',
+                        'Take ${med['medicationName']} from slot ${med['slotNumber']}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 20,
@@ -114,27 +89,6 @@ class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
                       ),
                     );
                   }).toList(),
-            ),
-
-            const SizedBox(height: 40),
-            ElevatedButton.icon(
-              onPressed: markAsTaken,
-              icon: const Icon(Icons.check_circle_outline),
-              label: const Text('I took the medication'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: mainColor,
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  side: BorderSide(color: mainColor, width: 2),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Urbanist',
-                ),
-              ),
             ),
           ],
         ),

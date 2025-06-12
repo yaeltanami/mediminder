@@ -5,6 +5,8 @@ const { sendLatePatientReminder } = require('../services/patientService');
 const PillBox = require('../models/pillBoxModel');
 const Medication = require('../models/medicationModel');
 const Patient = require('../models/patientModel'); 
+const medicationLogService = require('../services/medicationLogService');
+
 
 // שולחת פקודה ל-ESP – למשל: states=10000 תדליק את הלד הראשון
 const sendLedCommand = async (ledStates, ip) => {
@@ -27,12 +29,34 @@ const testLed = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-const reportMedicationTaken = (req, res) => {
-  const { slotNumber, timestamp } = req.body;
-  console.log(`💊 Medication taken in slot ${slotNumber} at ${timestamp}`);
+
+
+const reportMedicationTaken = async (req, res) => {
+  try {
+    const { slotNumber, timestamp } = req.body;
+    console.log(`💊 Medication taken in slot ${slotNumber} at ${timestamp}`);
+
+    const medication = await Medication.findOne({ slotNumber });
+    if (!medication) {
+      return res.status(404).json({ message: 'Medication not found' });
+    }
+
+    const dateObj = new Date(timestamp);
+    const date = dateObj.toISOString().split('T')[0];
+    const time = dateObj.toTimeString().split(':').slice(0, 2).join(':');
+
+    await medicationLogService.createLog({
+      medicationId: medication._id,
+      patientId: medication.patientId,
+      time,
+      date,
+    });
   
-  // כאן בעתיד אפשר לעדכן DB, לשלוח התראה וכו'
-  res.status(200).json({ message: 'Medication taken received successfully' });
+    res.status(200).json({ message: 'Medication taken received successfully' });
+  } catch (err) {
+    console.error('❌ Error in reportMedicationTaken:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 };
 
 // הפעלת הדלקת נורות לפי תרופות רלוונטיות
