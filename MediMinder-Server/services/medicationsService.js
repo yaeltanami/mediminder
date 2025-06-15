@@ -132,6 +132,8 @@ const updateMedication = async (medicationId, updateData) => {
         if (updateData.name) medication.name = updateData.name;
         if (updateData.dose) medication.dose = updateData.dose;
         if (updateData.times) medication.times = updateData.times;
+        if (updateData.days) medication.days = updateData.days;
+
 
         // שמירת השינויים במסד הנתונים
         const updatedMedication = await medication.save();
