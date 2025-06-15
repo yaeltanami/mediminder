@@ -37,7 +37,7 @@ class CaregiverReminderScreen extends StatelessWidget {
             Image.asset('assets/images/welcome.png', width: 140, height: 140),
             const SizedBox(height: 30),
             Text(
-             'Time to check on your patient',
+              'Time to check on your patient',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 26,
@@ -47,7 +47,7 @@ class CaregiverReminderScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-               "Make sure $patientName took their medications",
+              "Make sure $patientName took the medications",
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
@@ -60,7 +60,10 @@ class CaregiverReminderScreen extends StatelessWidget {
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     child: ListTile(
-                      leading: const Icon(Icons.medication, color: Color(0xFF208686)),
+                      leading: const Icon(
+                        Icons.medication,
+                        color: Color(0xFF208686),
+                      ),
                       title: Text(med['medicationName'] ?? ''),
                       subtitle: Text('Slot: ${med['slotNumber'] ?? ''}'),
                     ),
@@ -69,27 +72,6 @@ class CaregiverReminderScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 40),
-            // ElevatedButton.icon(
-            //   onPressed: () {
-            //     Navigator.pop(context);
-            //   },
-            //   icon: const Icon(Icons.check_circle_outline),
-            //   label: const Text('Checked In'),
-            //   style: ElevatedButton.styleFrom(
-            //     backgroundColor: Colors.white,
-            //     foregroundColor: mainColor,
-            //     minimumSize: const Size.fromHeight(50),
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(30),
-            //       side: BorderSide(color: mainColor, width: 2),
-            //     ),
-            //     textStyle: const TextStyle(
-            //       fontSize: 18,
-            //       fontWeight: FontWeight.bold,
-            //       fontFamily: 'Urbanist',
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),
