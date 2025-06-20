@@ -69,7 +69,6 @@ const activateDueMedications = async (patientId) => {
     return;
   }
 
-  console.log(`Activating LEDs with states: ${states}`);
   await sendLedCommand(states, ip);
 
 };

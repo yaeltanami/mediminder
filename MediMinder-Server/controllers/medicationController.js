@@ -7,7 +7,6 @@ const medicationService = require('../services/medicationsService');
 async function createMedication(req, res) {
     try {
         const { patientId, name, dose, times, days } = req.body;
-        console.log(`day ${days}`);
 
         if (!patientId || !name || !dose || !times || !days)  {
             return res.status(400).json({ message: 'All fields are required' });
@@ -79,7 +78,6 @@ const updateMedication = async (req, res) => {
 const getMedicationById = async (req, res) => {
     try {
         const { medicationId } = req.params;
-        console.log(`Searching for medication ID: ${medicationId}`);
         const medication = await medicationService.getMedicationById(medicationId);
         res.status(200).json(medication);
     } catch (error) {
