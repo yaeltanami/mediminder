@@ -235,11 +235,11 @@ void showAddPatientDialog({
                           Navigator.pop(context);
                           fetchPatients();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("✅ Patient added")),
+                            const SnackBar(content: Text("Patient added")),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("❌ Failed to add patient")),
+                            const SnackBar(content: Text("Failed to add patient")),
                           );
                         }
                       },

@@ -16,24 +16,16 @@ class NotificationsService {
         },
         body: jsonEncode({'fcmToken': token}),
       );
-
-      if (response.statusCode == 200) {
-        print('✅ FCM Token נשלח לשרת בהצלחה');
-      } else {
-        print('❌ בעיה בשליחה לשרת: ${response.body}');
-      }
     } catch (e) {
-      print('❌ שגיאה: $e');
+      print(e);
     }
   }
 
   Future<void> sendFcmToken(String jwt) async {
     final fcmToken = await FirebaseMessaging.instance.getToken();
 
-    print('🔄 מנסה לשלוח את ה-FCM Token : $fcmToken');
-
     if (fcmToken == null) {
-      print('⚠️ FCM Token is null');
+      print(' FCM Token is null');
       return;
     }
 
@@ -45,19 +37,13 @@ class NotificationsService {
       },
       body: jsonEncode({'fcmToken': fcmToken}),
     );
-
-    if (response.statusCode == 200) {
-      print('✅ FCM Token נשלח ונקשר למשתמש בהצלחה');
-    } else {
-      print('❌ שגיאה בשליחת הטוקן: ${response.body}');
-    }
   }
 
   static Future<void> logoutUser(String jwt) async {
     final fcmToken = await FirebaseMessaging.instance.getToken();
 
     if (fcmToken == null) {
-      print('⚠️ No FCM token found');
+      print(' No FCM token found');
       return;
     }
 
@@ -71,18 +57,12 @@ class NotificationsService {
       body: jsonEncode({'fcmToken': fcmToken}),
     );
 
-    if (response.statusCode == 200) {
-      print('✅ FCM token removed from server');
-    } else {
-      print('❌ Failed to remove FCM token from server: ${response.body}');
-    }
-
     //  הסרת ה־Token מהמכשיר המקומי
     try {
       await FirebaseMessaging.instance.deleteToken();
-      print('🧹 FCM token deleted locally');
+      print(' FCM token deleted locally');
     } catch (e) {
-      print('❌ Failed to delete FCM token locally: $e');
+      print('Failed to delete FCM token locally: $e');
     }
   }
 }
