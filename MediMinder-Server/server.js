@@ -18,18 +18,10 @@ app.get('/', (req, res) => res.send('MediMinder Server Running...'));
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log("JWT_SECRET:", process.env.JWT_SECRET);
+    console.log(`Server running on port ${PORT}`);
     
   
-    // // כאן מתבצעת שליחה אוטומטית של פקודת הדלקה ל-ESP כשהשרת עולה
-    // sendLedCommand("10000")
-    //   .then((result) => {
-    //     console.log("✅ ESP command sent on startup:", result);
-    //   })
-    //   .catch((err) => {
-    //     console.error("❌ Failed to send command to ESP on startup:", err.message);
-    //   });
+
       
   });
   

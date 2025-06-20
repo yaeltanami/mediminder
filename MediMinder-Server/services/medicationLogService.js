@@ -23,7 +23,7 @@ const getLogsByPatientAndDate = async (patientId, date) => {
       date,
     });
   } catch (err) {
-    console.error('❌ שגיאה בשליפת הלוגים:', err);
+    console.error(err);
     throw err;
   }
 };

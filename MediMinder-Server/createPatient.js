@@ -6,7 +6,7 @@ const MONGO_URI = 'mongodb://127.0.0.1:27017/MediMinder';
 
 const run = async () => {
   await mongoose.connect(MONGO_URI);
-  console.log('✅ Connected to MongoDB');
+  console.log('Connected to MongoDB');
 
   // יצירת משתמש חדש
   const user = await User.create({
@@ -25,12 +25,9 @@ const run = async () => {
     pillBox: null
   });
 
-  console.log('👤 Created user and patient');
-  console.log(`🆔 userId: ${user._id}`);
-  console.log(`🆔 patientId: ${patient._id}`);
 
   await mongoose.disconnect();
-  console.log('🔌 Disconnected from MongoDB');
+  console.log('Disconnected from MongoDB');
 };
 
 run();

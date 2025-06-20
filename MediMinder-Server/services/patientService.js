@@ -42,55 +42,6 @@ const registerPatient = async ({ name, email, password, birthDate, caregivers}) 
 };
 
 
-// /**
-//  * Sends a reminder notification to a patient to take their medication.
-//  *
-//  * @param {string} userId - The patient's ID
-//  * @param {string} medicationId - The medication's ID
-//  */
-// const sendPatientReminder = async (userId, medicationId, currentHourMinute) => {
-//     try {  
-//       const user = await User.findById(userId);
-//       if (!user) {
-//         console.error(`❌ User for patient ${userId} not found.`);
-//         return;
-//       }
-//       if (!user.fcmToken) {
-//         console.warn(`⚠️ User ${user._id} has no FCM token.`);
-//         return;
-//       }
-//       const medication = await Medication.findById(medicationId);
-//       if (!medication) {
-//         console.error(`❌ Medication with ID ${medicationId} not found.`);
-//         return;
-//       }
-//       const message = {
-//         token: user.fcmToken,
-//         notification: {
-//           title: '\u200EMedication Reminder',
-//           body: `\u200ETime to take: ${medication.name}`,
-//         },
-//         android: {
-//           notification: {
-//             icon: 'notification_icon', // שם הקובץ בלי סיומת (למשל notification_icon.png)
-//             color: '#FFCC00' // צהוב בהיר – תואם ללוגו שלך
-//           }
-//         },
-//         data: {
-//           action: 'medication_reminder',
-//           userId: user._id.toString(),
-//           medicationId: medication._id.toString(),
-//           medicationName: medication.name,
-//           slotNumber: medication.slotNumber.toString(),
-//           timeToTake: currentHourMinute,
-//         }
-//       };
-//       const response = await admin.messaging().send(message);
-//       console.log(`📢 התראה נשלחה למשתמש ${user._id}: ${medication.name}`);
-//     } catch (error) {
-//       console.error('❌ Error sending reminder to patient:', error);
-//     }
-//   };
   
 /**
  * Sends a combined reminder to a user for multiple medications at once.
@@ -101,7 +52,7 @@ const registerPatient = async ({ name, email, password, birthDate, caregivers}) 
 const sendPatientReminder = async (user, medications, currentHourMinute) => {
   try {
     if (!user?.fcmToken) {
-      console.warn(`⚠️ No FCM token for user ${user._id}`);
+      console.warn(` No FCM token for user ${user._id}`);
       return;
     }
 
@@ -135,9 +86,8 @@ const sendPatientReminder = async (user, medications, currentHourMinute) => {
     };
 
     const response = await admin.messaging().send(message);
-    console.log(`📢 תזכורת מרוכזת נשלחה ל-${user.name} לתרופות: ${medNames}`);
   } catch (err) {
-    console.error('❌ Error sending combined medication reminder:', err);
+    console.error('Error sending combined medication reminder:', err);
   }
 };
   
@@ -145,13 +95,13 @@ const sendLatePatientReminder = async (userId, medicationId) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      console.error(`❌ User for patient ${userId} not found.`);
+      console.error(` User for patient ${userId} not found.`);
       return;
     }
 
     const medication = await Medication.findById(medicationId); // ← העברנו למעלה
     if (!medication) {
-      console.error(`❌ Medication with ID ${medicationId} not found.`);
+      console.error(` Medication with ID ${medicationId} not found.`);
       return;
     }
 
@@ -159,7 +109,7 @@ const sendLatePatientReminder = async (userId, medicationId) => {
       const messageToPatient = {
         token: user.fcmToken,
         notification: {
-          title: '⚠️ Reminder: Medication not taken!',
+          title: 'Reminder: Medication not taken!',
           body: `Please remember to take: ${medication.name}`,
         },
         android: {
@@ -178,29 +128,29 @@ const sendLatePatientReminder = async (userId, medicationId) => {
       };
 
       await admin.messaging().send(messageToPatient);
-      console.log(`🚨 Late reminder sent to patient ${user._id} for ${medication.name}`);
+      console.log(`Late reminder sent to patient ${user._id} for ${medication.name}`);
     } else {
-      console.warn(`⚠️ User ${user._id} has no FCM token.`);
+      console.warn(`User ${user._id} has no FCM token.`);
     }
 
-    // ⬇️ עכשיו אפשר להשתמש ב-medication כאן גם
+    //  עכשיו אפשר להשתמש ב-medication כאן גם
     const patient = await Patient.findOne({ userId }).populate('caregivers');
     if (!patient) {
-      console.warn(`⚠️ Patient with userId ${userId} not found.`);
+      console.warn(`Patient with userId ${userId} not found.`);
       return;
     }
 
     for (const caregiver of patient.caregivers) {
       const caregiverUser = await User.findById(caregiver.userId);
       if (!caregiverUser || !caregiverUser.fcmToken) {
-        console.warn(`⚠️ Caregiver ${caregiver._id} has no associated user or FCM token.`);
+        console.warn(`Caregiver ${caregiver._id} has no associated user or FCM token.`);
         continue;
       }
 
       const messageToCaregiver = {
         token: caregiverUser.fcmToken,
         notification: {
-          title: '📣 Alert: Patient missed medication',
+          title: 'Alert: Patient missed medication',
           body: `Patient ${user.name} missed: ${medication.name}`
         },
         android: {
@@ -219,10 +169,10 @@ const sendLatePatientReminder = async (userId, medicationId) => {
       };
 
       await admin.messaging().send(messageToCaregiver);
-      console.log(`📤 Reminder sent to caregiver ${caregiverUser._id} about patient ${user.name}`);
+      console.log(`Reminder sent to caregiver ${caregiverUser._id} about patient ${user.name}`);
     }
   } catch (error) {
-    console.error('❌ Error sending late reminder to patient and caregivers:', error);
+    console.error('Error sending late reminder to patient and caregivers:', error);
   }
 };
 
@@ -250,7 +200,7 @@ const getCaregiversNamesForPatient = async (patientId) => {
 
     return users;
     } catch (error) {
-        console.error("❌ Error retrieving caregivers for patient:", error);
+        console.error("Error retrieving caregivers for patient:", error);
         throw error;
     }
 };
@@ -265,7 +215,7 @@ const getCaregiversForPatient = async (patientId) => {
 
     return patient.caregivers; // כבר מכיל מזהי Caregiver
   } catch (error) {
-    console.error("❌ Error retrieving caregiver IDs for patient:", error);
+    console.error("Error retrieving caregiver IDs for patient:", error);
     throw error;
   }
 };

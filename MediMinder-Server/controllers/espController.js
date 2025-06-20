@@ -7,7 +7,6 @@ const Patient = require('../models/patientModel');
 const medicationLogService = require('../services/medicationLogService');
 
 
-// שולחת פקודה ל-ESP – למשל: states=10000 תדליק את הלד הראשון
 const sendLedCommand = async (ledStates, ip) => {
   try {
     const url = `${ip}/setLeds?states=${ledStates}`;
@@ -33,7 +32,7 @@ const testLed = async (req, res) => {
 const reportMedicationTaken = async (req, res) => {
   try {
     const { slotNumber, timestamp } = req.body;
-    console.log(`💊 Medication taken in slot ${slotNumber} at ${timestamp}`);
+    console.log(`Medication taken in slot ${slotNumber} at ${timestamp}`);
 
     const medication = await Medication.findOne({ slotNumber });
     if (!medication) {
@@ -53,7 +52,7 @@ const reportMedicationTaken = async (req, res) => {
   
     res.status(200).json({ message: 'Medication taken received successfully' });
   } catch (err) {
-    console.error('❌ Error in reportMedicationTaken:', err);
+    console.error('Error in reportMedicationTaken:', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -63,14 +62,14 @@ const activateDueMedications = async (patientId) => {
   const result = await getDueMedicationsStates(patientId);
   const states = result.states;
   const ip = result.ip;
-  console.log('🎯 Calculated LED states:', result);
+  console.log('Calculated LED states:', result);
 
   if (!states || states === '00000') {
-    console.log('⚠️ No medications due right now.');
+    console.log('No medications due right now.');
     return;
   }
 
-  console.log(`💡 Activating LEDs with states: ${states}`);
+  console.log(`Activating LEDs with states: ${states}`);
   await sendLedCommand(states, ip);
 
 };
@@ -100,11 +99,11 @@ const handleLateReminderAlert = async (req, res) => {
         }
         const userId = patient.userId;
 
-        await sendLatePatientReminder(userId, medication._id, true); // ← מצב תזכורת מאוחרת
+        await sendLatePatientReminder(userId, medication._id, true); //  מצב תזכורת מאוחרת
 
         res.status(200).json({ message: 'Late reminder sent' });
     } catch (error) {
-        console.error('❌ Error handling late reminder alert:', error);
+        console.error('Error handling late reminder alert:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -112,8 +111,8 @@ const registerOrUpdatePillBox = async (req, res) => {
   try {
     const { macAddress, ip } = req.body;
 
-    console.log(`🔌 MAC Address: ${macAddress}`);
-    console.log(`🌐 IP Address: ${ip}`);
+    console.log(`MAC Address: ${macAddress}`);
+    console.log(`IP Address: ${ip}`);
 
     if (!macAddress || !ip) {
       return res.status(400).json({ message: 'MAC or IP is missing' });
@@ -141,7 +140,7 @@ const registerOrUpdatePillBox = async (req, res) => {
     return res.status(404).json({ message: 'No unassigned PillBox found' });
 
   } catch (error) {
-    console.error('❌ Error registering pillbox:', error);
+    console.error('Error registering pillbox:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

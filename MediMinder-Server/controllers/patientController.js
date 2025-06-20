@@ -86,7 +86,7 @@ const getPatientByEmail = async (req, res) => {
     res.json(user);
 
   } catch (error) {
-    console.error('❌ Error in getUserByPatientId:', error);
+    console.error('Error in getUserByPatientId:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
