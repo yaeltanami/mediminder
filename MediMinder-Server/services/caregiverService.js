@@ -15,13 +15,13 @@ const registerCaregiver = async ({ name, email, password, patientsEmails }) => {
     for (const email of patientsEmails) {
       const patientUser = await User.findOne({ email, role: 'patient' });
       if (!patientUser) {
-        console.log(`⚠️ Patient user not found for email: ${email}`);
+        console.log(`Patient user not found for email: ${email}`);
         continue;
       }
   
       const patient = await Patient.findOne({ userId: patientUser._id });
       if (!patient) {
-        console.log(`⚠️ Patient record not found for userId: ${patientUser._id}`);
+        console.log(`Patient record not found for userId: ${patientUser._id}`);
         continue;
       }
   
@@ -45,9 +45,8 @@ const registerCaregiver = async ({ name, email, password, patientsEmails }) => {
       });
   
       await caregiver.save();
-      console.log('✅ Caregiver saved:', caregiver._id);
     } catch (err) {
-      console.error('❌ Failed to save caregiver:', err.message);
+      console.error('Failed to save caregiver:', err.message);
   
       // 🧹 אם נכשלת, ננקה את המשתמש שיצרנו
       await User.findByIdAndDelete(user._id);
@@ -59,7 +58,7 @@ for (const patientId of patientIds) {
   try {
     await addCaregiverToPatient(caregiver._id, patientId);
   } catch (err) {
-    console.error(`❌ Failed to link patient ${patientId} to caregiver:, err.message`);
+    console.error(`Failed to link patient ${patientId} to caregiver:, err.message`);
   }
 }
     // 5. יצירת טוקן
@@ -92,7 +91,7 @@ const addCaregiverToPatient = async (caregiverId, patientId) => {
 
         return { message: `Patient added to caregiver successfully.` };
     } catch (error) {
-        console.error("❌ Error adding patient to caregiver:", error);
+        console.error("Error adding patient to caregiver:", error);
         throw error;
     }
 };
@@ -129,7 +128,7 @@ const removePatientFromCaregiver = async (caregiverId, patientId) => {
 
         return { message: `Patient removed from caregiver successfully.` };
     } catch (error) {
-        console.error("❌ Error removing patient from caregiver:", error);
+        console.error("Error removing patient from caregiver:", error);
         throw error;
     }
 };
@@ -151,7 +150,7 @@ const getPatientsForCaregiver = async (caregiverId) => {
 
         return caregiver.patients;
     } catch (error) {
-        console.error("❌ Error retrieving patients for caregiver:", error);
+        console.error("Error retrieving patients for caregiver:", error);
         throw error;
     }
 };
@@ -163,13 +162,13 @@ const sendCaregiverReminder = async (caregiverId, patientUserId, medications) =>
       const caregiver = await Caregiver.findById(caregiverId);
       const caregiverUser = await User.findById(caregiver.userId);
       if (!caregiverUser || !caregiverUser.fcmToken) {
-        console.warn(`⚠️ Caregiver ${caregiverId} has no FCM token`);
+        console.warn(`Caregiver ${caregiverId} has no FCM token`);
         return;
       }
 
       const patient = await User.findById(patientUserId);
       if (!patient) {
-         console.warn(`⚠️ Patient with ID ${patientUserId} not found`);
+         console.warn(`Patient with ID ${patientUserId} not found`);
          return;
     }
     
@@ -202,9 +201,8 @@ const sendCaregiverReminder = async (caregiverId, patientUserId, medications) =>
       };
   
       await admin.messaging().send(message);
-    console.log(`📨 נשלחה התראה מרוכזת למטפל ${caregiverUser.name} על התרופות: ${medNames}`);
     } catch (error) {
-      console.error('❌ שגיאה בשליחת התראה למטפל:', error);
+      console.error('error sending messasge to caregiver', error);
     }
   };
 

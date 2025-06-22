@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Medinfo extends StatelessWidget {
-  const Medinfo({super.key}); // ✅ הוספנו את ה-Key
+  const Medinfo({super.key}); //  הוספנו את ה-Key
 
   @override
   Widget build(BuildContext context) {

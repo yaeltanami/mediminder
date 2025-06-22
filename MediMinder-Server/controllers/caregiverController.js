@@ -24,19 +24,7 @@ const registerCaregiver = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-/**
- * בקר להוספת מטופל למטפל
- */
-// const addCaregiverToPatient = async (req, res) => {
-//     try {
-//         const { caregiverId, patientId } = req.body;
-//         const response = await caregiverService.addCaregiverToPatient(caregiverId, patientId);
-//         res.status(200).json(response);
-//     } catch (error) {
-//         res.status(400).json({ message: error.message });
-//     }
-// };
-// controllers/caregiverController.js
+
 const addCaregiverToPatient = async (req, res) => {
   try {
     const { caregiverId, patientId } = req.body;

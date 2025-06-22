@@ -7,16 +7,15 @@ const medicationService = require('../services/medicationsService');
 async function createMedication(req, res) {
     try {
         const { patientId, name, dose, times, days } = req.body;
-        console.log(`day ${days}`);
 
         if (!patientId || !name || !dose || !times || !days)  {
-            return res.status(400).json({ message: '❌ All fields are required' });
+            return res.status(400).json({ message: 'All fields are required' });
         }
 
                 // בדיקה שכל איבר במערך תקין
         for (let entry of times) {
             if (!entry.time || typeof entry.pillsCount !== 'number') {
-                return res.status(400).json({ message: '❌ Each entry in times must have time and pillsCount' });
+                return res.status(400).json({ message: 'Each entry in times must have time and pillsCount' });
             }
         }
 
@@ -24,7 +23,7 @@ async function createMedication(req, res) {
 
         res.status(201).json(result);
     } catch (error) {
-        res.status(500).json({ message: '❌ Error adding medication', error: error.message });
+        res.status(500).json({ message: 'Error adding medication', error: error.message });
     }
 }
 
@@ -37,7 +36,7 @@ async function getMedicationsForPatient(req, res) {
         const medications = await medicationService.getMedicationsForPatient(patientId);
         res.status(200).json(medications);  // החזרת כל התרופות של המטופל
     } catch (error) {
-        res.status(500).json({ message: '❌ Error getting medications', error: error.message });
+        res.status(500).json({ message: 'Error getting medications', error: error.message });
     }
 }
 
@@ -79,7 +78,6 @@ const updateMedication = async (req, res) => {
 const getMedicationById = async (req, res) => {
     try {
         const { medicationId } = req.params;
-        console.log(`🔎 Searching for medication ID: ${medicationId}`);
         const medication = await medicationService.getMedicationById(medicationId);
         res.status(200).json(medication);
     } catch (error) {
@@ -98,7 +96,7 @@ const getMedicationsForPatientByDay = async (req, res) => {
         totalIntakeCount
         });
     } catch (error) {
-      res.status(500).json({ message: '❌ Error getting medications for day', error: error.message });
+      res.status(500).json({ message: 'Error getting medications for day', error: error.message });
     }
   };
 
@@ -115,7 +113,7 @@ const getMedicationsForPatientByDay = async (req, res) => {
   
       res.status(200).json({ message: 'Notification sent' });
     } catch (error) {
-      console.error('❌ Error in controller:', error);
+      console.error('Error in controller:', error);
       res.status(500).json({ message: 'Server error' });
     }
   };

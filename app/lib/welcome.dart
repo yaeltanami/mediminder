@@ -23,22 +23,22 @@ class Welcome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double screenWidth =
-        MediaQuery.of(context).size.width; // ✅ רוחב המסך הדינמי
+        MediaQuery.of(context).size.width; // רוחב המסך הדינמי
     double screenHeight =
-        MediaQuery.of(context).size.height; // ✅ גובה המסך הדינמי
+        MediaQuery.of(context).size.height; //  גובה המסך הדינמי
 
     return Column(
       children: [
         Container(
-          width: screenWidth, // ✅ שינוי מרוחב קבוע ליחסי
-          height: screenHeight, // ✅ שינוי מגובה קבוע ליחסי
+          width: screenWidth, // שינוי מרוחב קבוע ליחסי
+          height: screenHeight, //  שינוי מגובה קבוע ליחסי
           clipBehavior: Clip.antiAlias,
           decoration: ShapeDecoration(
             color: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(
                 screenWidth * 0.05,
-              ), // ✅ שינוי לגודל יחסי
+              ), //  שינוי לגודל יחסי
             ),
           ),
           child: Stack(
@@ -48,7 +48,7 @@ class Welcome extends StatelessWidget {
                 top: 0,
                 child: Container(
                   width: screenWidth,
-                  height: screenHeight * 0.05, // ✅ התאמה ל-5% מהמסך
+                  height: screenHeight * 0.05, //  התאמה ל-5% מהמסך
                   decoration: const BoxDecoration(color: Colors.white),
                 ),
               ),
@@ -62,7 +62,7 @@ class Welcome extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Color(0xFF196EB0),
-                      fontSize: 50, // ✅ ניתן להקטין את הגודל אם יש בעיה
+                      fontSize: 50, //  ניתן להקטין את הגודל אם יש בעיה
                       fontFamily: 'Roboto',
                       fontWeight: FontWeight.w700,
                     ),
@@ -73,8 +73,8 @@ class Welcome extends StatelessWidget {
                 left: screenWidth * 0.1,
                 top: screenHeight * 0.75,
                 child: Container(
-                  width: screenWidth * 0.8, // ✅ 80% מרוחב המסך
-                  height: screenHeight * 0.07, // ✅ 7% מגובה המסך
+                  width: screenWidth * 0.8, //  80% מרוחב המסך
+                  height: screenHeight * 0.07, //  7% מגובה המסך
                   decoration: ShapeDecoration(
                     color: const Color(0xFF196EB0),
                     shape: RoundedRectangleBorder(
@@ -129,8 +129,8 @@ class Welcome extends StatelessWidget {
                 left: screenWidth * 0.2,
                 top: screenHeight * 0.1,
                 child: Container(
-                  width: screenWidth * 0.6, // ✅ התאמה לגודל המסך
-                  height: screenWidth * 0.6, // ✅ התאמה לגודל המסך
+                  width: screenWidth * 0.6, //  התאמה לגודל המסך
+                  height: screenWidth * 0.6, //  התאמה לגודל המסך
                   decoration: ShapeDecoration(
                     image: const DecorationImage(
                       image: NetworkImage("https://placehold.co/255x254"),
@@ -139,7 +139,7 @@ class Welcome extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
                         screenWidth * 0.3,
-                      ), // ✅ התאמה לרוחב המסך
+                      ),
                     ),
                   ),
                 ),

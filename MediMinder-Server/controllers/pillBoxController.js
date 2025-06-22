@@ -32,19 +32,18 @@ const assignMedicationToAvailableSlot = async (req, res) => {
         const { patientId, medicationId } = req.body;
 
         if (!patientId || !medicationId) {
-            return res.status(400).json({ message: '❌ Patient ID and Medication ID are required' });
+            return res.status(400).json({ message: 'Patient ID and Medication ID are required' });
         }
-        console.log(`assignMedicationToAvailableSlot pId ${patientId}`);
 
         const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, medicationId);
 
         res.status(200).json({ 
-            message: `✅ Medication assigned automatically to slot ${slotNumber}`, 
+            message: `Medication assigned automatically to slot ${slotNumber}`, 
             slotNumber,
             pillBox: updatedPillBox 
         });
     } catch (error) {
-        res.status(500).json({ message: '❌ Error assigning medication', error: error.message });
+        res.status(500).json({ message: 'Error assigning medication', error: error.message });
     }
 };
 

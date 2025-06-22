@@ -27,7 +27,6 @@ const createPillBox = async (patientId) => {
     const pillBox = new PillBox({ patientId, slots });
     await pillBox.save();
 
-    console.log(`📦 Smart box created for patient ${patientId}`);
 
     return pillBox;
 };
@@ -43,12 +42,10 @@ const createPillBox = async (patientId) => {
 const assignMedicationToAvailableSlot = async (patientId, medicationId) => {
     try {
         const pillBox = await PillBox.findOne({ patientId });
-        // const pillBox = await PillBox.findOne({ userId: patientId });
-        console.log(`pillboxser patientId ${patientId}`);
 
 
         if (!pillBox) {
-            throw new Error("❌ No pillbox found for this patient.");
+            throw new Error("No pillbox found for this patient.");
         }
 
         console.log(`find!!!`);
@@ -57,7 +54,7 @@ const assignMedicationToAvailableSlot = async (patientId, medicationId) => {
         const slot = pillBox.slots.find(s => s.status === 'empty');
 
         if (!slot) {
-            throw new Error("❌ No available slots in the pillbox.");
+            throw new Error("No available slots in the pillbox.");
         }
 
         // עדכון התא עם התרופה
@@ -66,11 +63,11 @@ const assignMedicationToAvailableSlot = async (patientId, medicationId) => {
 
         await pillBox.save();
 
-        console.log(`💊 The medication was assigned to slot number ${slot.slotNumber}`);
+        console.log(`The medication was assigned to slot number ${slot.slotNumber}`);
 
         return { updatedPillBox: pillBox, slotNumber: slot.slotNumber };
     } catch (error) {
-        console.error("❌ Error assigning medication:", error);
+        console.error("Error assigning medication:", error);
         throw error;
     }
 };
@@ -85,20 +82,17 @@ const assignMedicationToAvailableSlot = async (patientId, medicationId) => {
  */
 const removeMedicationFromPillBox = async (patientId, medicationId) => {
     try {
-        console.log("🔍 Looking for pillbox with patientId:", patientId, "Type:", typeof patientId);
 
         // המרה ל־ObjectId
         const pillBox = await PillBox.findOne({ patientId: new mongoose.Types.ObjectId(patientId) });
 
         if (!pillBox) {
-            console.log("❌ No pillbox found for this patient.");
             return { message: "No pillbox found" };
         }
 
         const slot = pillBox.slots.find(slot => slot.medication?.toString() === medicationId);
 
         if (!slot) {
-            console.log("❌ Medication not found in any slot.");
             return { message: "Medication not found in pillbox" };
         }
 
@@ -107,10 +101,9 @@ const removeMedicationFromPillBox = async (patientId, medicationId) => {
 
         await pillBox.save();
 
-        console.log(`📦 Slot number ${slot.slotNumber} is now empty`);
         return pillBox;
     } catch (error) {
-        console.error("❌ Error removing medication from pillbox:", error);
+        console.error("Error removing medication from pillbox:", error);
         throw error;
     }
 };
@@ -147,7 +140,7 @@ const getPillBoxStatus = async (patientId) => {
 
         return { patientId, slots };
     } catch (error) {
-        console.error("❌ Error retrieving pillbox status:", error);
+        console.error("Error retrieving pillbox status:", error);
         throw error;
     }
 };

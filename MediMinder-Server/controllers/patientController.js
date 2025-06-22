@@ -10,20 +10,17 @@ const jwt = require('jsonwebtoken');
  */
 const registerPatient = async (req, res) => {
     try {
-        console.log("try to register");
         const { name, email, password, birthDate, caregivers } = req.body;
 
         if (!name || !email || !password || !birthDate) {
             return res.status(400).json({ message: 'All fields are required' });
         }
-        console.log("all fiels good");
 
         const { user, patient, token } = await patientService.registerPatient({ name, email, password, birthDate, caregivers });
         res.status(201).json({ user, patient, token });
 
     } catch (error) {
-                console.log("do not work4");
-
+    
         res.status(400).json({ message: error.message });
     }
 };
@@ -65,7 +62,6 @@ const getPatientByEmail = async (req, res) => {
 
 
   const getUserByPatientId = async (req, res) => {
-    console.log("trying to get user by patient id");
   try {
     const { patientId } = req.params;
 
@@ -86,7 +82,7 @@ const getPatientByEmail = async (req, res) => {
     res.json(user);
 
   } catch (error) {
-    console.error('❌ Error in getUserByPatientId:', error);
+    console.error('Error in getUserByPatientId:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

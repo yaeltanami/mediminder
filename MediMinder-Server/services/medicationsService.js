@@ -23,12 +23,11 @@ const addMedication = async (patientId, name, dose, times, days) => {
         // הוספת התרופה לרשימת התרופות של המטופל
         await Patient.findByIdAndUpdate(patientId, { $push: { medications: savedMedication._id } });
 
-        console.log(`patient id:${patientId} patient name ${name}`)
 
         // שיבוץ התרופה לתא פנוי בקופסה
         const { updatedPillBox, slotNumber } = await pillBoxService.assignMedicationToAvailableSlot(patientId, savedMedication._id);
 
-                // ✅ עדכון התרופה עם מספר התא שנבחר בקופסה
+                //  עדכון התרופה עם מספר התא שנבחר בקופסה
                 savedMedication.slotNumber = slotNumber;
                 await savedMedication.save();
 
@@ -39,7 +38,7 @@ const addMedication = async (patientId, name, dose, times, days) => {
             pillBox: updatedPillBox
         };
     } catch (error) {
-        console.error('❌ Error adding medication:', error);
+        console.error('Error adding medication:', error);
         throw error;
     }
 };
@@ -58,7 +57,7 @@ async function getMedicationsForPatientByDay(patientId, day) {
             totalIntakeCount
          };
     } catch (error) {
-        console.error('❌ Error getting medications:', error);
+        console.error('Error getting medications:', error);
         throw error;
     }
 }
@@ -74,7 +73,7 @@ async function getMedicationsForPatient(patientId) {
         const medications = await Medication.find({ patientId });   
         return medications;
     } catch (error) {
-        console.error('❌ Error getting medications:', error);
+        console.error('Error getting medications:', error);
         throw error;
     }
 }
@@ -104,11 +103,11 @@ const deleteMedication = async (medicationId) => {
         // מחיקת התרופה ממסד הנתונים
         await Medication.findByIdAndDelete(medicationId);
 
-        console.log(`🗑️ Medication '${medication.name}' was successfully deleted`);
+        console.log(`Medication '${medication.name}' was successfully deleted`);
 
         return { message: "Medication deleted successfully" };
     } catch (error) {
-        console.error("❌ Error deleting medication:", error);
+        console.error("Error deleting medication:", error);
         throw error;
     }
 };
@@ -138,10 +137,10 @@ const updateMedication = async (medicationId, updateData) => {
         // שמירת השינויים במסד הנתונים
         const updatedMedication = await medication.save();
 
-        console.log(`✏️ Medication '${updatedMedication.name}' was successfully updated`);
+        console.log(`Medication '${updatedMedication.name}' was successfully updated`);
         return updatedMedication;
     } catch (error) {
-        console.error("❌ Error updating medication:", error);
+        console.error("Error updating medication:", error);
         throw error;
     }
 };
@@ -162,7 +161,7 @@ const getMedicationById = async (medicationId) => {
 
         return medication;
     } catch (error) {
-        console.error("❌ Error retrieving medication:", error);
+        console.error("Error retrieving medication:", error);
         throw error;
     }
 };
@@ -183,7 +182,7 @@ const markAsTaken = async (userId, medicationId) => {
     };
   
     await admin.messaging().send(message);
-    console.log(`📤 Sent 'medication_taken' notification to user ${userId}`);
+    console.log(`Sent 'medication_taken' notification to user ${userId}`);
   };
 
 
@@ -198,7 +197,7 @@ function isTimeMatching(currentHour, currentMinute, medicationTime) {
     const patient = await Patient.findById(patientId).populate('medications');
     const pillBox = await PillBox.findOne({ patientId });
     if (!pillBox) {
-        console.error(`❌ No pillbox found for patient ${patientId}`);
+        console.error(`No pillbox found for patient ${patientId}`);
         return null;
     }
     const now = new Date();
@@ -206,30 +205,25 @@ function isTimeMatching(currentHour, currentMinute, medicationTime) {
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
 
-    console.log(`📆 Current day: ${currentDay}`);
-    console.log(`🕒 Current time: ${currentHour}:${currentMinute}`);
+
 
     let states = ['0', '0', '0', '0', '0']; // חמישה תאים בקופסה
 
     for (const medication of patient.medications) {
-        console.log(`💊 Checking medication: ${medication.name}`);
-        console.log(`📅 Medication days: ${medication.days}`);
+
         if (medication.days.includes(currentDay)) {
-            console.log(`✅ Medication ${medication.name} is valid for today`);
             for (const time of medication.times) {
-                console.log(`⏰ Comparing time ${time.time} with now`);
                 if (isTimeMatching(currentHour, currentMinute, time.time)) {
-                    console.log(`🎯 Match found! Turning on slot ${medication.slotNumber}`);
+                    console.log(`Match found! Turning on slot ${medication.slotNumber}`);
                     states[medication.slotNumber - 1] = '1';
                 }
             }
         }else {
-            console.log(`⛔ Medication ${medication.name} is not scheduled for ${currentDay}`);
+            console.log(`Medication ${medication.name} is not scheduled for ${currentDay}`);
           }
     }
 
-    console.log(`📦 Final LED states: ${states.join('')}`);
-    console.log(`🌐 Pillbox IP: ${pillBox.ip}`); 
+
     return { states: states.join(''), ip: pillBox.ip };
 };
 module.exports = {

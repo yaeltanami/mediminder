@@ -17,7 +17,7 @@ const createMedicationLog = async (req, res) => {
     res.status(201).json({ message: 'Medication logged successfully' });
 
   } catch (error) {
-    console.error('❌ Error in createMedicationLog:', error);
+    console.error('Error in createMedicationLog:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -29,7 +29,7 @@ const getLogsByPatientAndDate = async (req, res) => {
     const logs = await medicationLogService.getLogsByPatientAndDate(patientId, date);
     res.status(200).json(logs);
   } catch (err) {
-    console.error('❌ Failed to get logs:', err);
+    console.error('Failed to get logs:', err);
     res.status(500).json({ message: 'Failed to fetch logs' });
   }
 };

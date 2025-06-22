@@ -74,7 +74,7 @@ const saveFcmToken = async (req, res) => {
 
         res.status(200).json({ message: 'FCM token saved successfully' });
     } catch (error) {
-        console.error('❌ Error saving FCM token:', error);
+        console.error('Error saving FCM token:', error);
         res.status(500).json({ message: error.message || 'Internal server error' });
     }
 };
@@ -99,7 +99,7 @@ const removeFcmToken = async (req, res) => {
   
       res.status(200).json({ message: 'FCM token removed' });
     } catch (error) {
-      console.error('❌ Error removing FCM token:', error);
+      console.error('Error removing FCM token:', error);
       res.status(500).json({ message: error.message || 'Server error' });
     }
   };
