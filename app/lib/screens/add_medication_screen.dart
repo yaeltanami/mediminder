@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../config.dart'; // קובץ שמחזיק את כתובת ה-API
+import '../config.dart'; 
 
 class AddMedicationScreen extends StatefulWidget {
 final String? patientId;

@@ -22,7 +22,6 @@ class RoleSelectionScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 40),
 
-            // לוגו
             Image.asset(
               'assets/images/welcome.png',
               width: screenWidth * 0.5,
@@ -31,7 +30,6 @@ class RoleSelectionScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // כפתור מטופל
             SizedBox(
               width: screenWidth,
               height: screenHeight * 0.07,
@@ -62,7 +60,6 @@ class RoleSelectionScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // כפתור מטפל
             SizedBox(
               width: screenWidth,
               height: screenHeight * 0.07,

@@ -9,11 +9,6 @@ import '../widgets/weekday_selector.dart';
 import '../widgets/medication_card.dart';
 import '../navigation_observer.dart';
 
-import 'message.dart';
-import 'welcome_screen.dart';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
-
 import 'profile_screen.dart';
 
 class PatientHomeScreen extends StatefulWidget {
@@ -24,7 +19,7 @@ class PatientHomeScreen extends StatefulWidget {
 }
 
 class _PatientHomeScreenState extends State<PatientHomeScreen> with RouteAware {
-  // הגדרת היום הנבחר כברירת מחדל (היום הנוכחי)
+
   String selectedDay =
       DateTime.now().weekday == 7
           ? 'Sunday'
@@ -37,7 +32,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> with RouteAware {
             'Saturday',
           ][DateTime.now().weekday - 1];
 
-  List<dynamic> medications = []; // רשימת התרופות שנשלפות מהשרת
+  List<dynamic> medications = []; 
   List<dynamic> takenLogs = [];
   int totalIntakeCount = 0;
 
@@ -45,7 +40,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> with RouteAware {
   @override
   void initState() {
     super.initState();
-    // טעינת תרופות
     fetchMedicationsForDay();
   }
 
@@ -56,7 +50,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> with RouteAware {
     if (route is PageRoute) {
       routeObserver.subscribe(this, route);
     }
-    fetchMedicationsForDay(); // ירענן כשחוזרים ממסך אחר
+    fetchMedicationsForDay(); 
   }
 
   @override
@@ -67,7 +61,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> with RouteAware {
 
   @override
   void didPopNext() {
-    // חוזרים מהמסך הבא למסך הנוכחי => לרענן נתונים
     fetchMedicationsForDay();
   }
 
@@ -143,7 +136,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> with RouteAware {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // שורת פתיחה עם טקסט, אייקון ו־לוגו
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -162,7 +154,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> with RouteAware {
                         height: 35,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Color(0xFFB2D8D8), // צבע רקע כהה עדין
+                          color: Color(0xFFB2D8D8), 
                           border: Border.all(
                             color: Color(0xFF208686),
                             width: 1,
@@ -241,7 +233,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> with RouteAware {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment:
-                          CrossAxisAlignment.center, // 🟢 הוספה חשובה!
+                          CrossAxisAlignment.center, 
 
                       children: [
                         const Icon(
@@ -309,10 +301,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> with RouteAware {
 
               const SizedBox(height: 32),
 
-              //  Text(
-              //   'My Medications for $selectedDay',
-              //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              // ),
+        
               const SizedBox(height: 10),
               Expanded(
                 child:

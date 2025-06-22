@@ -1,7 +1,3 @@
-/// WelcomeScreen
-/// This is the first screen of the app. It displays the MediMinder logo,
-/// welcoming text, and buttons to Login or Register.
-
 import 'package:flutter/material.dart';
 import '../widgets/login_button.dart';
 import '../widgets/register_button.dart';
@@ -13,10 +9,9 @@ class WelcomeScreen extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 230, 241, 244), // תכלת בהיר
+      backgroundColor: const Color.fromARGB(255, 230, 241, 244), 
       body: Stack(
         children: [
-          // לוגו מעוגל ללא רקע לבן
           Positioned(
             top: screenHeight * 0.15,
             left: screenWidth * 0.125,
@@ -32,7 +27,6 @@ class WelcomeScreen extends StatelessWidget {
             ),
           ),
 
-          // טקסט אחיד: Welcome to MediMinder
           _buildText(
             context,
             'Welcome to\n',
@@ -49,7 +43,6 @@ class WelcomeScreen extends StatelessWidget {
             const Color.fromARGB(255, 32, 134, 134),
             48,
           ),
-          // כפתורים
           LoginButton(screenWidth: screenWidth, screenHeight: screenHeight),
           RegisterButton(screenWidth: screenWidth, screenHeight: screenHeight),
         ],

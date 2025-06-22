@@ -33,7 +33,6 @@ class ReminderScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // שורת אייקונים עליונה (ריק/אינפו + מחיקה)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
