@@ -50,7 +50,6 @@ Future<void> fetchPatients() async {
     final List<dynamic> rawPatients = jsonDecode(response.body);
     print("patients are: ${rawPatients}");
 
-    // טען לכל מטופל את פרטי היוזר שלו
     final List<dynamic> enrichedPatients = [];
 
     for (var patient in rawPatients) {
@@ -131,7 +130,7 @@ setState(() {
   height: 30,
   decoration: BoxDecoration(
     shape: BoxShape.circle,
-    color: Color(0xFFB2D8D8), // צבע טורקיז בהיר-כהה, את יכולה לשנות לפי טעמך
+    color: Color(0xFFB2D8D8), 
     border: Border.all(
       color: Color(0xFF208686),
       width: 1,

@@ -87,10 +87,7 @@ class ProfileScreen extends StatelessWidget {
                         color: Color(0xFF208686),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        "$email",
-                        style: const TextStyle(fontSize: 27),
-                      ),
+                      Text("$email", style: const TextStyle(fontSize: 27)),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -110,11 +107,14 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 50),
 
                   ElevatedButton.icon(
-                    icon: const Icon(Icons.medication, size: 22, color: Colors.white),
+                    icon: const Icon(
+                      Icons.medication,
+                      size: 22,
+                      color: Colors.white,
+                    ),
                     label: const Text(
                       "My Medications",
-                      style: TextStyle(                      fontSize: 20,
-color: Colors.white),
+                      style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: mainColor,
@@ -139,11 +139,14 @@ color: Colors.white),
                   const SizedBox(height: 20),
 
                   ElevatedButton.icon(
-                    icon: const Icon(Icons.group, size: 22, color: Colors.white),
+                    icon: const Icon(
+                      Icons.group,
+                      size: 22,
+                      color: Colors.white,
+                    ),
                     label: const Text(
                       "My Caregivers",
-                      style: TextStyle(                      fontSize: 20,
-color: Colors.white),
+                      style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: mainColor,
@@ -172,8 +175,10 @@ color: Colors.white),
             padding: const EdgeInsets.only(bottom: 30),
             child: OutlinedButton.icon(
               icon: Icon(Icons.logout, size: 22, color: mainColor),
-              label: Text("Logout", style: TextStyle(                      fontSize: 18,
-color: mainColor)),
+              label: Text(
+                "Logout",
+                style: TextStyle(fontSize: 18, color: mainColor),
+              ),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: mainColor, width: 2),
                 padding: const EdgeInsets.symmetric(
@@ -189,9 +194,7 @@ color: mainColor)),
                   context,
                   listen: false,
                 );
-                await NotificationsService.logoutUser(
-                  authProvider.token!,
-                );
+                await NotificationsService.logoutUser(authProvider.token!);
                 authProvider.logout();
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),

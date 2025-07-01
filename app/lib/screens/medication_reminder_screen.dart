@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mediminder/providers/auth_provider.dart';
-import 'package:provider/provider.dart';
-import '../config.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class MedicationReminderScreen extends StatefulWidget {
   final String userId;
@@ -51,10 +46,10 @@ class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start, // מתחילים מהחלק העליון
+          mainAxisAlignment: MainAxisAlignment.start, 
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 80), // ⬅️ כאן שולטים כמה נמוך להתחיל
+            const SizedBox(height: 80),
             Image.asset('assets/images/welcome.png', width: 140, height: 140),
 
             const SizedBox(height: 20),

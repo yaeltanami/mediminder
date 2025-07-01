@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 import '../services/notifications_service.dart';
 import '../widgets/caregiver_actions.dart';
-import 'package:http/http.dart' as http;
 import '../config.dart';
 import 'dart:convert';
-
-
-
 
 
 class CaregiverProfileScreen extends StatefulWidget {
@@ -56,7 +53,6 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
           enriched.add({'_id': patientId, 'name': userData['name']});
         }
       }
-
       setState(() {
         patients = enriched;
       });

@@ -1,8 +1,3 @@
-/// LoginScreen
-/// מסך התחברות לאפליקציית MediMinder.
-/// המשתמש מזין אימייל וסיסמה, ואם הפרטים נכונים – מתבצעת התחברות ומעבר למסך הבית.
-/// העיצוב מותאם למסך הראשי בצבעי טורקיז ונראות אחידה.
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -28,21 +23,15 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    printInitialFcmToken(); // הדפסת הטוקן כשהמסך עולה
-  }
-
-  void printInitialFcmToken() async {
-    // final fcmToken = await FirebaseMessaging.instance.getToken();
   }
 
   Future<void> loginUser(String email, String password) async {
     final fcmToken = await FirebaseMessaging.instance.getToken();
-    print('📱 FCM Token כשהמסך נטען (לפני התחברות): $fcmToken');
+    print(' FCM Token when screen loads (before login): $fcmToken');
 
     final url = Uri.parse('${Config.baseUrl}/users/login');
 
     try {
-      print("before server");
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -50,7 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (response.statusCode == 200) {
-        print("server secsses");
         final data = jsonDecode(response.body);
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         authProvider.setUser(data['user']);
@@ -77,7 +65,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
           if (roleResponse.statusCode == 200) {
             final roleData = jsonDecode(roleResponse.body);
-            print("roleData: ${roleData}");
             authProvider.setRole(roleData);
           } else {
             print("Failed to fetch role data: ${roleResponse.statusCode}");
@@ -89,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
         try {
           await NotificationsService().sendFcmToken(data['token']);
         } catch (e) {
-          print('🚨 שגיאה בשליחת FCM Token: $e');
+          print(' Error sending FCM Token: $e');
         }
 
         Navigator.pushReplacement(
