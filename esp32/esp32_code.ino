@@ -6,8 +6,8 @@
 #include <time.h>
 
 // Network credentials
-const char* ssid = "Zohar123";
-const char* password = "0533413334";
+const char* ssid = "BeSpot36AD_2.4";
+const char* password = "390436AD";
 
 WebServer server(80);
 
@@ -19,6 +19,8 @@ const String color[NUM_LEDS] = { "Red", "Green", "Blue", "Yellow", "Purple" };
 // LED states
 bool ledStates[NUM_LEDS] = { false, false, false, false, false };
 bool lastButtonStates[NUM_LEDS] = { false, false, false, false, false };
+unsigned long ledActivationTimes[NUM_LEDS] = { 0, 0, 0, 0, 0 };
+bool reminderSent[NUM_LEDS] = { false, false, false, false, false };
 
 void setup() {
   Serial.begin(115200);
@@ -40,12 +42,16 @@ void setup() {
   Serial.println("\nConnected to WiFi");
   Serial.println("IP address: " + WiFi.localIP().toString());
 
-   // סנכרון עם שעון NTP
+  // Sending MAC and IP to the server
+  registerPillBoxWithServer();
+
+   
+  // Synchronize with NTP clock
   configTime(0, 0, "pool.ntp.org");
-time_t now = time(nullptr);
+  time_t now = time(nullptr);
   while (now < 100000) {
     delay(500);
-    Serial.print("*"); // ממתין לשעון
+    Serial.print("*"); 
     now = time(nullptr);
   }
 
@@ -56,33 +62,33 @@ time_t now = time(nullptr);
   server.on("/", HTTP_GET, handleRoot);
   server.on("/setLeds", HTTP_GET, handleSetLeds);
   server.on("/status", HTTP_GET, handleStatus);
-
   server.begin();
 }
 
 void loop() {
   server.handleClient();
   checkButtons();
+  checkReminderTimers();
 }
 
 void checkButtons() {
   for (int i = 0; i < NUM_LEDS; i++) {
-    bool currentState = !digitalRead(buttonPins[i]); // כפתורים עם INPUT_PULLUP
+    bool currentState = !digitalRead(buttonPins[i]); 
 
     if (currentState != lastButtonStates[i]) {
       if (currentState) { // לחיצה על כפתור
         ledStates[i] = false;
         digitalWrite(ledPins[i], HIGH); // כיבוי הלד
-
-        // יצירת דיווח
+        reminderSent[i] = false; // reset reminder
+        // Create a report
         String timestamp = getTimeISO();
         int slotNumber = i + 1;
 
-        // שליחת POST לשרת Node.js
+        // Sending POST to Node.js server
         WiFiClient client;
         HTTPClient http;
 
-        http.begin(client, "http://10.0.0.12:5050/api/esp/report-taken"); 
+        http.begin(client, "http://10.0.0.15:5050/api/esp/report-taken"); 
         http.addHeader("Content-Type", "application/json");
 
         String payload = "{\"slotNumber\":" + String(slotNumber) + ",\"timestamp\":\"" + timestamp + "\"}";
@@ -95,8 +101,29 @@ void checkButtons() {
 
         http.end();
       }
-
       lastButtonStates[i] = currentState;
+    }
+  }
+}
+void checkReminderTimers() {
+  unsigned long now = millis();
+  for (int i = 0; i < NUM_LEDS; i++) {
+    if (ledStates[i] && !reminderSent[i]) {
+      if (ledActivationTimes[i] > 0 && now - ledActivationTimes[i] >= 60000) {
+        WiFiClient client;
+        HTTPClient http;
+        http.begin(client, "http://10.0.0.15:5050/api/esp/reminder-alert");
+        http.addHeader("Content-Type", "application/json");
+
+        String payload = "{\"slotNumber\":" + String(i + 1) + ",\"macAddress\":\"" + WiFi.macAddress() + "\"}";
+        int httpResponseCode = http.POST(payload);
+
+        Serial.println(" Reminder sent for slot " + String(i + 1));
+        Serial.println("Response code: " + String(httpResponseCode));
+
+        http.end();
+        reminderSent[i] = true;
+      }
     }
   }
 }
@@ -108,6 +135,37 @@ String getTimeISO() {
   return String(buf);
 }
 
+void registerPillBoxWithServer() {
+  String mac = WiFi.macAddress();
+  String ip = "http://" + WiFi.localIP().toString();
+
+
+  Serial.println(" Registering pillbox with MAC: " + mac + " and IP: " + ip);
+
+  WiFiClient client;
+  HTTPClient http;
+
+  http.begin(client, "http://10.0.0.15:5050/api/esp/register-pillbox");
+  http.addHeader("Content-Type", "application/json");
+
+  String payload = "{";
+  payload += "\"macAddress\": \"" + mac + "\",";
+  payload += "\"ip\": \"" + ip + "\"";
+  payload += "}";
+
+  int httpResponseCode = http.POST(payload);
+
+  Serial.println("Sent: " + payload);
+  Serial.println("Server response code: " + String(httpResponseCode)); 
+  if (httpResponseCode > 0) {
+    String response = http.getString();
+    Serial.println("Server reply: " + response);
+  } else {
+    Serial.println("Failed to send POST request");
+  }
+
+  http.end();
+}
 
 void handleRoot() {
   String html = "<!DOCTYPE html><html><head>";
@@ -145,6 +203,10 @@ void handleSetLeds() {
       for (int i = 0; i < NUM_LEDS; i++) {
         ledStates[i] = (states.charAt(i) == '1');
         digitalWrite(ledPins[i], ledStates[i] ? LOW : HIGH);
+        if (ledStates[i]) {
+          ledActivationTimes[i] = millis();
+          reminderSent[i] = false;
+        }
       }
     }
   }
