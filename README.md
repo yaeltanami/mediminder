@@ -52,9 +52,10 @@ Before running the app, you must update the IP in the config file so the app kno
  ```bash
 ifconfig
 ```
-    Look for inet under your active network.
+Look for inet under your active network.
 
 2. Open the config file in the Flutter app:
+   
   app/lib/config.dart
   Update the serverIp field with your IP:
     class Config {
