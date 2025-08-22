@@ -44,7 +44,7 @@ Before running the app, you must update the IP in the config file so the app kno
 1. Find your local IP address:
   Windows:
 ```bash
-    ipconfig
+ipconfig
 ```
    Look for IPv4 Address under your active network.
 
