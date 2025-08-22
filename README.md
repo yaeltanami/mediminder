@@ -23,6 +23,7 @@ cd mediminder
 
 🌐 Run the Server (Node.js)
 1. Go into the server folder:
+```bash
   cd MediMinder-Server
 2. Install dependencies:
   npm install
