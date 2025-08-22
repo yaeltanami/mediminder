@@ -19,16 +19,25 @@ MediMinder is a complete system for managing medications, combining a **Flutter 
 ### 1) Clone the repository
 ```bash
 git clone https://github.com/yaeltanami/mediminder.git
+```
+
+```bash
 cd mediminder
 ```
 
 ### 2) Run the Server (Node.js)
 1. Go into the server folder:
+```bash
   cd MediMinder-Server
+```
 2. Install dependencies:
-  npm install
+ ```bash
+ npm install
+```
 3. Start the server:
-  npm start
+ ```bash
+ npm start
+```
 
 ### 3) Configure the IP Address
 Before running the app, you must update the IP in the config file so the app knows how to reach your server.
