@@ -2,7 +2,7 @@
 
 MediMinder is a complete system for managing medications, combining a **Flutter mobile app**, a **Node.js backend server**, and an **ESP32 microcontroller** for smart pillbox integration.
 
-📌 Jira board: [MediMinder Project](https://yaeltanami22-1716922574370.atlassian.net/jira/core/projects/PM/board)
+ Jira board: [MediMinder Project](https://yaeltanami22-1716922574370.atlassian.net/jira/core/projects/PM/board)
 
 ---
 
@@ -14,7 +14,7 @@ MediMinder is a complete system for managing medications, combining a **Flutter 
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1) Clone the repository
 ```bash
