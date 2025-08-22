@@ -20,8 +20,7 @@ MediMinder is a complete system for managing medications, combining a **Flutter 
 ```bash
 git clone https://github.com/yaeltanami/mediminder.git
 cd mediminder
-
----
+```
 
 ### 2) Run the Server (Node.js)
 1. Go into the server folder:
