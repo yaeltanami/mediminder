@@ -16,12 +16,12 @@ MediMinder is a complete system for managing medications, combining a **Flutter 
 
 ## 🚀 Getting Started
 
-### 1. Clone the repository
+### 1) Clone the repository
 ```bash
 git clone https://github.com/yaeltanami/mediminder.git
 cd mediminder
 
-🌐 Run the Server (Node.js)
+### 2) Run the Server (Node.js)
 1. Go into the server folder:
   cd MediMinder-Server
 2. Install dependencies:
@@ -29,7 +29,7 @@ cd mediminder
 3. Start the server:
   npm start
 
-🔧 Configure the IP Address
+### 3) Configure the IP Address
 Before running the app, you must update the IP in the config file so the app knows how to reach your server.
 1. Find your local IP address:
   Windows:
@@ -50,9 +50,9 @@ Before running the app, you must update the IP in the config file so the app kno
       static String get baseUrl => 'http://$serverIp:$serverPort/api';
     }
 
-⚠️ Make sure both your phone/emulator and your computer are on the same Wi-Fi network!
+### ⚠️ Make sure both your phone/emulator and your computer are on the same Wi-Fi network!
 
-📱 Run the Flutter App :
+### 4) Run the Flutter App :
 1. Go into the app folder:
   cd app
 2. Install dependencies:
