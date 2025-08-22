@@ -43,11 +43,15 @@ cd mediminder
 Before running the app, you must update the IP in the config file so the app knows how to reach your server.
 1. Find your local IP address:
   Windows:
-   run:  ipconfig
+```bash
+    ipconfig
+```
    Look for IPv4 Address under your active network.
 
   Mac/Linux:
-    run: ifconfig
+   ```bash
+ifconfig
+    ```
     Look for inet under your active network.
 
 2. Open the config file in the Flutter app:
