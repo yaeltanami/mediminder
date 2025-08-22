@@ -74,6 +74,11 @@ if (caregiversId && caregiversId.length > 0) {
   } catch (error) {
     console.error('Error sending medication reminders:', error);
   }
+  // Schedule the function to run every minute
+cron.schedule('* * * * *', () => {
+    console.log("⏰ Checking for due medications...");
+    sendMedicationReminders();
+});
 };
 
 
