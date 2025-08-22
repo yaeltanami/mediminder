@@ -57,11 +57,16 @@ Look for inet under your active network.
 2. Open the config file in the Flutter app:
    
   app/lib/config.dart
+
   Update the serverIp field with your IP:
+  
     class Config {
+  
       static const String serverIp = '192.168.1.15'; // your computer’s IP
+      
       static const int serverPort = 5050;
 
+      
       static String get baseUrl => 'http://$serverIp:$serverPort/api';
     }
 
