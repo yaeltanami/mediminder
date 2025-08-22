@@ -77,11 +77,11 @@ Look for inet under your active network.
  ```bash
   cd app
 ```
-3. Install dependencies:
+2. Install dependencies:
 ```bash
   flutter pub get
 ```
-3.Run the app on your device/emulator:
+3. Run the app on your device/emulator:
 ```bash
   flutter run
 ```
