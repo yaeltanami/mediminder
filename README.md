@@ -49,9 +49,9 @@ Before running the app, you must update the IP in the config file so the app kno
    Look for IPv4 Address under your active network.
 
   Mac/Linux:
-   ```bash
+ ```bash
 ifconfig
-    ```
+```
     Look for inet under your active network.
 
 2. Open the config file in the Flutter app:
