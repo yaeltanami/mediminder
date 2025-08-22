@@ -74,8 +74,14 @@ Look for inet under your active network.
 
 ### 4) Run the Flutter App :
 1. Go into the app folder:
+ ```bash
   cd app
-2. Install dependencies:
+```
+3. Install dependencies:
+```bash
   flutter pub get
+```
 3.Run the app on your device/emulator:
+```bash
   flutter run
+```
