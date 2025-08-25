@@ -1,9 +1,15 @@
 const axios = require('axios');
 const { getDueMedicationsStates } = require('../services/medicationsService');
-const { sendLatePatientReminder } = require('../services/patientService');
+const {
+  sendLatePatientReminder,
+  sendMedicationTakenToPatient,
+  getCaregiversForPatient,
+} = require('../services/patientService');
+const pillBoxService = require('../services/pillBoxService');
+const caregiverService = require('../services/caregiverService');
 const PillBox = require('../models/pillBoxModel');
 const Medication = require('../models/medicationModel');
-const Patient = require('../models/patientModel'); 
+const Patient = require('../models/patientModel');
 const medicationLogService = require('../services/medicationLogService');
 
 
@@ -21,23 +27,42 @@ const sendLedCommand = async (ledStates, ip) => {
 // נקודת בדיקה פשוטה
 const testLed = async (req, res) => {
   try {
-    const result = await sendLedCommand("10000"); // לדליק לד ראשון בלבד
+    const result = await sendLedCommand('10000'); // לדליק לד ראשון בלבד
     res.json({ message: 'Command sent to ESP32', result });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-
 const reportMedicationTaken = async (req, res) => {
   try {
-    const { slotNumber, timestamp } = req.body;
+    const { slotNumber, timestamp, macAddress } = req.body;
+
+    if (!slotNumber || !macAddress) {
+      return res
+        .status(400)
+        .json({ message: 'Missing slotNumber or macAddress' });
+    }
     console.log(`Medication taken in slot ${slotNumber} at ${timestamp}`);
 
-    const medication = await Medication.findOne({ slotNumber });
-    if (!medication) {
-      return res.status(404).json({ message: 'Medication not found' });
+    const pillBox = await PillBox.findOne({ macAddress });
+    if (!pillBox) {
+      return res.status(404).json({ message: 'PillBox not found for MAC' });
     }
+
+    const patientId = pillBox.patientId;
+
+    const medication = await Medication.findOne({ patientId, slotNumber });
+    if (!medication) {
+      return res.status(404).json({ message: 'Medication not found for slot' });
+    }
+    const patient = await Patient.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+    const userId = patient.userId;
+
+    await sendMedicationTakenToPatient(userId, medication);
 
     const dateObj = new Date(timestamp);
     const date = dateObj.toISOString().split('T')[0];
@@ -49,7 +74,19 @@ const reportMedicationTaken = async (req, res) => {
       time,
       date,
     });
-  
+
+    const caregiversId = await getCaregiversForPatient(patient._id);
+    if (caregiversId && caregiversId.length > 0) {
+      await Promise.all(
+        caregiversId.map((caregiver) =>
+          caregiverService.sendMedicationTakenToCargiver({
+            patientUser: user,
+            user: caregiver,
+            medication,
+          })
+        )
+      );
+    }
     res.status(200).json({ message: 'Medication taken received successfully' });
   } catch (err) {
     console.error('Error in reportMedicationTaken:', err);
@@ -70,42 +107,45 @@ const activateDueMedications = async (patientId) => {
   }
 
   await sendLedCommand(states, ip);
-
 };
+
 const handleLateReminderAlert = async (req, res) => {
-    try {
-        const { slotNumber, macAddress } = req.body;
+  try {
+    const { slotNumber, macAddress } = req.body;
 
-        if (!slotNumber || !macAddress) {
-            return res.status(400).json({ message: 'Missing slotNumber or macAddress' });
-        }
-            // חיפוש קופסה לפי MAC
-        const pillBox = await PillBox.findOne({ macAddress });
-        if (!pillBox) {
-            return res.status(404).json({ message: 'PillBox not found for MAC' });
-        }
-
-        const patientId = pillBox.patientId;
-         // שליפת התרופה המתאימה
-        const medication = await Medication.findOne({ patientId, slotNumber });
-        if (!medication) {
-            return res.status(404).json({ message: 'Medication not found for slot' });
-        }
-        // שליפת המטופל לצורך שליפת userId
-        const patient = await Patient.findById(patientId);
-        if (!patient) {
-            return res.status(404).json({ message: 'Patient not found' });
-        }
-        const userId = patient.userId;
-
-        await sendLatePatientReminder(userId, medication._id, true); //  מצב תזכורת מאוחרת
-
-        res.status(200).json({ message: 'Late reminder sent' });
-    } catch (error) {
-        console.error('Error handling late reminder alert:', error);
-        res.status(500).json({ message: error.message });
+    if (!slotNumber || !macAddress) {
+      return res
+        .status(400)
+        .json({ message: 'Missing slotNumber or macAddress' });
     }
+    // חיפוש קופסה לפי MAC
+    const pillBox = await PillBox.findOne({ macAddress });
+    if (!pillBox) {
+      return res.status(404).json({ message: 'PillBox not found for MAC' });
+    }
+
+    const patientId = pillBox.patientId;
+    // שליפת התרופה המתאימה
+    const medication = await Medication.findOne({ patientId, slotNumber });
+    if (!medication) {
+      return res.status(404).json({ message: 'Medication not found for slot' });
+    }
+    // שליפת המטופל לצורך שליפת userId
+    const patient = await Patient.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+    const userId = patient.userId;
+
+    await sendLatePatientReminder(userId, medication._id); //  מצב תזכורת מאוחרת
+
+    res.status(200).json({ message: 'Late reminder sent' });
+  } catch (error) {
+    console.error('Error handling late reminder alert:', error);
+    res.status(500).json({ message: error.message });
+  }
 };
+
 const registerOrUpdatePillBox = async (req, res) => {
   try {
     const { macAddress, ip } = req.body;
@@ -132,12 +172,13 @@ const registerOrUpdatePillBox = async (req, res) => {
       pillBox.macAddress = macAddress;
       pillBox.ip = ip;
       await pillBox.save();
-      return res.status(200).json({ message: 'MAC and IP assigned to existing PillBox' });
+      return res
+        .status(200)
+        .json({ message: 'MAC and IP assigned to existing PillBox' });
     }
 
     // case 3: No pillbox found (shouldn't happen)
     return res.status(404).json({ message: 'No unassigned PillBox found' });
-
   } catch (error) {
     console.error('Error registering pillbox:', error);
     res.status(500).json({ message: 'Server error' });

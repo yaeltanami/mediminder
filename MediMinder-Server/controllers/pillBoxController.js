@@ -1,4 +1,5 @@
 const PillBox = require('../models/pillBoxModel');
+const User = require('../models/userModel');
 const Medication = require('../models/medicationModel');
 const pillBoxService = require('../services/pillBoxService');
 
@@ -60,10 +61,21 @@ const getPillBoxStatus = async (req, res) => {
     }
 };
 
+const getUserByPillBoxId = async (req, res) => {
+  try {
+    const { pillBoxId } = req.params;
+    const user = await pillBoxService.getUserByPillBoxId(pillBoxId);
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+
 
 module.exports = {
      createPillBox ,
       assignMedicationToAvailableSlot,
-      getPillBoxStatus
+      getPillBoxStatus, 
+      getUserByPillBoxId
      };
 

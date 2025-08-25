@@ -91,7 +91,7 @@ void checkButtons() {
         http.begin(client, "http://10.0.0.15:5050/api/esp/report-taken"); 
         http.addHeader("Content-Type", "application/json");
 
-        String payload = "{\"slotNumber\":" + String(slotNumber) + ",\"timestamp\":\"" + timestamp + "\"}";
+        String payload = "{\"slotNumber\":" + String(slotNumber) + ",\"timestamp\":\"" + timestamp + ",\"macAddress\":\"" + WiFi.macAddress() +"\"}";
         int httpResponseCode = http.POST(payload);
 
         Serial.println("📡 POST sent to server:");

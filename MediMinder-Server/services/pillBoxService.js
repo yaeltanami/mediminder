@@ -1,4 +1,6 @@
 const PillBox = require('../models/pillBoxModel');
+const User = require('../models/userModel');
+const Patient = require('../models/patientModel');
 const Medication = require('../models/medicationModel');
 const mongoose = require('mongoose'); 
 
@@ -145,11 +147,30 @@ const getPillBoxStatus = async (patientId) => {
     }
 };
 
+/**
+ * מאתר User לפי מזהה קופסה
+ * @param {String} pillBoxId
+ * @returns {Promise<User|null>}
+ */
+async function getUserByPillBoxId(pillBoxId) {
+  const pillBox = await PillBox.findById(pillBoxId);
+  if (!pillBox) throw new Error('PillBox not found');
+
+  const patient = await Patient.findById(pillBox.patientId);
+  if (!patient) throw new Error('Patient not found for this pillBox');
+
+  const user = await User.findById(patient.userId);
+  if (!user) throw new Error('User not found for this patient');
+
+  return user;
+}
+
 
 
 module.exports = { 
     createPillBox,  
     assignMedicationToAvailableSlot,
      removeMedicationFromPillBox,
-     getPillBoxStatus
+     getPillBoxStatus,
+     getUserByPillBoxId
      };
