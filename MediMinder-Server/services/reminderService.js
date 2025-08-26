@@ -67,7 +67,7 @@ if (caregiversId && caregiversId.length > 0) {
   );
   console.log(`Reminder also sent to ${caregiversId.length} caregiver(s)`);
 } else {
-  console.log(`ℹNo caregivers found for patient ${patient._id}`);
+  console.log(`No caregivers found for patient ${patient._id}`);
 }
       await activateDueMedications(patient._id);
     }

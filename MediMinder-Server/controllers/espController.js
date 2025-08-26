@@ -11,6 +11,8 @@ const PillBox = require("../models/pillBoxModel");
 const Medication = require("../models/medicationModel");
 const Patient = require("../models/patientModel");
 const medicationLogService = require("../services/medicationLogService");
+const User = require("../models/userModel");
+
 
 const sendLedCommand = async (ledStates, ip) => {
   try {
@@ -60,7 +62,7 @@ const reportMedicationTaken = async (req, res) => {
       return res.status(404).json({ message: "Patient not found" });
     }
     const userId = patient.userId;
-    const user = await UserActivation.findById(userId);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

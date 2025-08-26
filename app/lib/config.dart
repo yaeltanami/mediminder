@@ -1,6 +1,6 @@
 class Config {
 
-  static const String serverIp = '192.168.1.202'; // כתובת ה-IP של המחשב שלך
+  static const String serverIp = '10.100.102.17'; // כתובת ה-IP של המחשב שלך
 
   static const int serverPort = 5050;
 

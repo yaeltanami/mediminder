@@ -262,7 +262,7 @@ const sendMedicationTakenToCargiver = async ({
         action: "medication_taken_cargiver",
         patientName: user.name,
         medicationName: medication.name,
-        medicationId: string(medication._id),
+        medicationId: String(medication._id),
       },
     };
     const response = await admin.messaging().send(message);
