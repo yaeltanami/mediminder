@@ -1,17 +1,16 @@
-const axios = require('axios');
-const { getDueMedicationsStates } = require('../services/medicationsService');
+const axios = require("axios");
+const { getDueMedicationsStates } = require("../services/medicationsService");
 const {
   sendLatePatientReminder,
   sendMedicationTakenToPatient,
   getCaregiversForPatient,
-} = require('../services/patientService');
-const pillBoxService = require('../services/pillBoxService');
-const caregiverService = require('../services/caregiverService');
-const PillBox = require('../models/pillBoxModel');
-const Medication = require('../models/medicationModel');
-const Patient = require('../models/patientModel');
-const medicationLogService = require('../services/medicationLogService');
-
+} = require("../services/patientService");
+const pillBoxService = require("../services/pillBoxService");
+const caregiverService = require("../services/caregiverService");
+const PillBox = require("../models/pillBoxModel");
+const Medication = require("../models/medicationModel");
+const Patient = require("../models/patientModel");
+const medicationLogService = require("../services/medicationLogService");
 
 const sendLedCommand = async (ledStates, ip) => {
   try {
@@ -19,16 +18,16 @@ const sendLedCommand = async (ledStates, ip) => {
     const response = await axios.get(url);
     return response.data;
   } catch (error) {
-    console.error('Failed to send command to ESP32:', error.message);
-    throw new Error('ESP32 connection failed');
+    console.error("Failed to send command to ESP32:", error.message);
+    throw new Error("ESP32 connection failed");
   }
 };
 
 // נקודת בדיקה פשוטה
 const testLed = async (req, res) => {
   try {
-    const result = await sendLedCommand('10000'); // לדליק לד ראשון בלבד
-    res.json({ message: 'Command sent to ESP32', result });
+    const result = await sendLedCommand("10000"); // לדליק לד ראשון בלבד
+    res.json({ message: "Command sent to ESP32", result });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -41,32 +40,36 @@ const reportMedicationTaken = async (req, res) => {
     if (!slotNumber || !macAddress) {
       return res
         .status(400)
-        .json({ message: 'Missing slotNumber or macAddress' });
+        .json({ message: "Missing slotNumber or macAddress" });
     }
     console.log(`Medication taken in slot ${slotNumber} at ${timestamp}`);
 
     const pillBox = await PillBox.findOne({ macAddress });
     if (!pillBox) {
-      return res.status(404).json({ message: 'PillBox not found for MAC' });
+      return res.status(404).json({ message: "PillBox not found for MAC" });
     }
 
     const patientId = pillBox.patientId;
 
     const medication = await Medication.findOne({ patientId, slotNumber });
     if (!medication) {
-      return res.status(404).json({ message: 'Medication not found for slot' });
+      return res.status(404).json({ message: "Medication not found for slot" });
     }
     const patient = await Patient.findById(patientId);
     if (!patient) {
-      return res.status(404).json({ message: 'Patient not found' });
+      return res.status(404).json({ message: "Patient not found" });
     }
     const userId = patient.userId;
+    const user = await UserActivation.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     await sendMedicationTakenToPatient(userId, medication);
 
     const dateObj = new Date(timestamp);
-    const date = dateObj.toISOString().split('T')[0];
-    const time = dateObj.toTimeString().split(':').slice(0, 2).join(':');
+    const date = dateObj.toISOString().split("T")[0];
+    const time = dateObj.toTimeString().split(":").slice(0, 2).join(":");
 
     await medicationLogService.createLog({
       medicationId: medication._id,
@@ -81,16 +84,16 @@ const reportMedicationTaken = async (req, res) => {
         caregiversId.map((caregiver) =>
           caregiverService.sendMedicationTakenToCargiver({
             patientUser: user,
-            user: caregiver,
+            caregiverId: caregiver,
             medication,
           })
         )
       );
     }
-    res.status(200).json({ message: 'Medication taken received successfully' });
+    res.status(200).json({ message: "Medication taken received successfully" });
   } catch (err) {
-    console.error('Error in reportMedicationTaken:', err);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error in reportMedicationTaken:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -99,10 +102,10 @@ const activateDueMedications = async (patientId) => {
   const result = await getDueMedicationsStates(patientId);
   const states = result.states;
   const ip = result.ip;
-  console.log('Calculated LED states:', result);
+  console.log("Calculated LED states:", result);
 
-  if (!states || states === '00000') {
-    console.log('No medications due right now.');
+  if (!states || states === "00000") {
+    console.log("No medications due right now.");
     return;
   }
 
@@ -116,32 +119,32 @@ const handleLateReminderAlert = async (req, res) => {
     if (!slotNumber || !macAddress) {
       return res
         .status(400)
-        .json({ message: 'Missing slotNumber or macAddress' });
+        .json({ message: "Missing slotNumber or macAddress" });
     }
     // חיפוש קופסה לפי MAC
     const pillBox = await PillBox.findOne({ macAddress });
     if (!pillBox) {
-      return res.status(404).json({ message: 'PillBox not found for MAC' });
+      return res.status(404).json({ message: "PillBox not found for MAC" });
     }
 
     const patientId = pillBox.patientId;
     // שליפת התרופה המתאימה
     const medication = await Medication.findOne({ patientId, slotNumber });
     if (!medication) {
-      return res.status(404).json({ message: 'Medication not found for slot' });
+      return res.status(404).json({ message: "Medication not found for slot" });
     }
     // שליפת המטופל לצורך שליפת userId
     const patient = await Patient.findById(patientId);
     if (!patient) {
-      return res.status(404).json({ message: 'Patient not found' });
+      return res.status(404).json({ message: "Patient not found" });
     }
     const userId = patient.userId;
 
     await sendLatePatientReminder(userId, medication._id); //  מצב תזכורת מאוחרת
 
-    res.status(200).json({ message: 'Late reminder sent' });
+    res.status(200).json({ message: "Late reminder sent" });
   } catch (error) {
-    console.error('Error handling late reminder alert:', error);
+    console.error("Error handling late reminder alert:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -154,7 +157,7 @@ const registerOrUpdatePillBox = async (req, res) => {
     console.log(`IP Address: ${ip}`);
 
     if (!macAddress || !ip) {
-      return res.status(400).json({ message: 'MAC or IP is missing' });
+      return res.status(400).json({ message: "MAC or IP is missing" });
     }
 
     let pillBox = await PillBox.findOne({ macAddress });
@@ -163,7 +166,7 @@ const registerOrUpdatePillBox = async (req, res) => {
       // case 1: MAC exists, update IP
       pillBox.ip = ip;
       await pillBox.save();
-      return res.status(200).json({ message: 'Updated existing PillBox IP' });
+      return res.status(200).json({ message: "Updated existing PillBox IP" });
     }
 
     // case 2: MAC not found, try to assign to one without MAC
@@ -174,14 +177,14 @@ const registerOrUpdatePillBox = async (req, res) => {
       await pillBox.save();
       return res
         .status(200)
-        .json({ message: 'MAC and IP assigned to existing PillBox' });
+        .json({ message: "MAC and IP assigned to existing PillBox" });
     }
 
     // case 3: No pillbox found (shouldn't happen)
-    return res.status(404).json({ message: 'No unassigned PillBox found' });
+    return res.status(404).json({ message: "No unassigned PillBox found" });
   } catch (error) {
-    console.error('Error registering pillbox:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error registering pillbox:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 module.exports = {
