@@ -270,6 +270,56 @@ const sendMedicationTakenToCargiver = async ({
     console.error("Error sending combined medication reminder:", err);
   }
 };
+const sendLateCargiverReminder = async (
+  caregiverId,
+  patientUserId,
+  medications
+) => {
+  try {
+    const caregiver = await Caregiver.findById(caregiverId);
+    const caregiverUser = await User.findById(caregiver.userId);
+    if (!caregiverUser || !caregiverUser.fcmToken) {
+      console.warn(`Caregiver ${caregiverId} has no FCM token`);
+      return;
+    }
+
+    const patient = await User.findById(patientUserId);
+    if (!patient) {
+      console.warn(`Patient with ID ${patientUserId} not found`);
+      return;
+    }
+
+    const medNames = medications.map((med) => med.name).join(", ");
+    const medData = medications.map((med) => ({
+      medicationId: med._id.toString(),
+      medicationName: med.name,
+      slotNumber: med.slotNumber?.toString() || "",
+    }));
+        // שליחת ההתראה
+    const message = {
+      token: caregiverUser.fcmToken,
+      notification: {
+        title: "\u200EMedication Reminder",
+        body: `\u200E${patient.name} needs to take: ${medNames} now`,
+      },
+      android: {
+        notification: {
+          icon: "notification_icon",
+          color: "#FFCC00",
+        },
+      },
+      data: {
+        action: "caregiver_reminder",
+        patientName: patient.name,
+        medications: JSON.stringify(medData),
+      },
+    };
+
+    await admin.messaging().send(message);
+  } catch (error) {
+    console.error("error sending messasge to caregiver", error);
+  }
+};
 
 module.exports = {
   findByUserId,
@@ -279,4 +329,5 @@ module.exports = {
   getPatientsForCaregiver,
   sendCaregiverReminder,
   sendMedicationTakenToCargiver,
+  sendLateCargiverReminder,
 };

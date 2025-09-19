@@ -12,6 +12,8 @@ const Medication = require("../models/medicationModel");
 const Patient = require("../models/patientModel");
 const medicationLogService = require("../services/medicationLogService");
 const User = require("../models/userModel");
+const patientService = require("../services/patientService");
+
 
 
 const sendLedCommand = async (ledStates, ip) => {
@@ -143,13 +145,32 @@ const handleLateReminderAlert = async (req, res) => {
     const userId = patient.userId;
 
     await sendLatePatientReminder(userId, medication._id); //  מצב תזכורת מאוחרת
+    // שליחת תזכורות לכל המטפלים
+    const caregiversId = await patientService.getCaregiversForPatient(patient._id);
+    if (caregiversId && caregiversId.length > 0) {
+      await Promise.all(
+        caregiversId.map(caregiver =>
+          caregiverService.sendLateCargiverReminder(
+            caregiver,
+            patient.userId,
+            medicationsForPatient 
+          )
+        )
+      );
+      console.log(`Reminder also sent to ${caregiversId.length} caregiver(s)`);
+    } else {
+      console.log(`ℹNo caregivers found for patient ${patient._id}`);
+    }
 
     res.status(200).json({ message: "Late reminder sent" });
+
+    con
   } catch (error) {
     console.error("Error handling late reminder alert:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 const registerOrUpdatePillBox = async (req, res) => {
   try {
